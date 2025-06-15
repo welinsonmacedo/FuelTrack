@@ -20,11 +20,6 @@ import {
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-
-const doc = new jsPDF();
-doc.getFontSize();
-
-
 export default function GeneralReport() {
   const [caminhao, setCaminhao] = useState("");
   const [motorista, setMotorista] = useState("");
@@ -200,20 +195,22 @@ export default function GeneralReport() {
           <div style={styles.resultado}>
             <h2>Resultados Detalhados</h2>
 
-            <table style={styles.tabela}>
-              <thead><tr><th>Viagem</th><th>KM</th><th>Litros</th><th>Média km/l</th></tr></thead>
-              <tbody>{dados.map((d,i)=>(
-                <tr key={i}>
-                  <td>{d.nome}</td><td>{d.km}</td><td>{d.litros}</td><td>{d.media}</td>
-                </tr>
-              ))}</tbody>
-            </table>
+            <div style={{ overflowX: "auto", width: "100%" }}>
+              <table style={styles.tabela}>
+                <thead><tr><th>Viagem</th><th>KM</th><th>Litros</th><th>Média km/l</th></tr></thead>
+                <tbody>{dados.map((d,i)=>(
+                  <tr key={i}>
+                    <td>{d.nome}</td><td>{d.km}</td><td>{d.litros}</td><td>{d.media}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
 
             <p><strong>Média Geral (total km / total litros):</strong> {mediaGeral} km/l</p>
             <p><strong>Média das Médias:</strong> {mediaSobreMedia} km/l</p>
 
-            <div style={{ height: 300, marginTop: 20 }}>
-              <ResponsiveContainer>
+            <div style={{ width: "100%", height: 300, marginTop: 20 }}>
+              <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dados}>
                   <XAxis dataKey="nome"/>
                   <YAxis/>
@@ -232,26 +229,28 @@ export default function GeneralReport() {
               Exportar Resumo PDF
             </button>
 
-            <table style={styles.tabela}>
-              <thead>
-                <tr>
-                  <th>Motorista</th>
-                  <th>KM Rodado</th>
-                  <th>Litros</th>
-                  <th>Média km/l</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resumoMotoristas.map((r, i) => (
-                  <tr key={i}>
-                    <td>{r.motorista}</td>
-                    <td>{r.km.toFixed(2)}</td>
-                    <td>{r.litros.toFixed(2)}</td>
-                    <td>{r.media.toFixed(2)}</td>
+            <div style={{ overflowX: "auto", width: "100%" }}>
+              <table style={styles.tabela}>
+                <thead>
+                  <tr>
+                    <th>Motorista</th>
+                    <th>KM Rodado</th>
+                    <th>Litros</th>
+                    <th>Média km/l</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {resumoMotoristas.map((r, i) => (
+                    <tr key={i}>
+                      <td>{r.motorista}</td>
+                      <td>{r.km.toFixed(2)}</td>
+                      <td>{r.litros.toFixed(2)}</td>
+                      <td>{r.media.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </main>
@@ -260,12 +259,56 @@ export default function GeneralReport() {
 }
 
 const styles = {
-  container: { display:"flex", height:"100vh", fontFamily:"Arial" },
-  main: { flex:1, padding:40, background:"#ecf0f1", overflowY:"auto" },
+  container: {
+    display:"flex",
+    height:"100vh",
+    fontFamily:"Arial",
+    flexDirection: "column",  // Para responsividade vertical em mobile
+    padding: 10,
+  },
+  main: {
+    flex:1,
+    padding:20,
+    background:"#ecf0f1",
+    overflowY:"auto",
+    maxWidth: "100%",
+  },
   title: { fontSize:26, marginBottom:20 },
-  form: { display:"flex", flexWrap:"wrap", gap:10, marginBottom:30 },
-  input: { padding:10, borderRadius:5, border:"1px solid #ccc", flex:"1 0 200px" },
-  button: { background:"#27ae60", color:"#fff", padding:12, borderRadius:5, border:"none", cursor:"pointer" },
-  resultado: { background:"#fff", padding:20, borderRadius:10, boxShadow:"0 0 8px rgba(0,0,0,0.1)" },
-  tabela: { width:"100%", borderCollapse:"collapse", marginTop:20 }
+  form: {
+    display:"flex",
+    flexWrap:"wrap",
+    gap:10,
+    marginBottom:30,
+    justifyContent: "center",
+  },
+  input: {
+    padding:10,
+    borderRadius:5,
+    border:"1px solid #ccc",
+    flex:"1 0 200px",
+    minWidth: 0,
+    boxSizing: "border-box",
+  },
+  button: {
+    background:"#27ae60",
+    color:"#fff",
+    padding:12,
+    borderRadius:5,
+    border:"none",
+    cursor:"pointer",
+    flex:"1 0 150px",
+    minWidth: 0,
+  },
+  resultado: {
+    background:"#fff",
+    padding:20,
+    borderRadius:10,
+    boxShadow:"0 0 8px rgba(0,0,0,0.1)",
+  },
+  tabela: {
+    width:"100%",
+    borderCollapse:"collapse",
+    marginTop:20,
+    minWidth:"600px",
+  },
 };
