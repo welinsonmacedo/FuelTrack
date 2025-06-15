@@ -1,0 +1,137 @@
+import { Routes, Route } from "react-router-dom";
+import Login from "./pages/login/Login";
+import "./App.css";
+import "./index.css";
+
+import Dashboard from "./pages/dashboard/Dashboard";
+import Register from "./pages/travel and supply registration/travelandsupplyregistration";
+import GeneralReport from "./pages/general report/generalReport";
+import DriverRegister from "./pages/driver register/DriverRegister";
+import TruckRegister from "./pages/truck register/TruckRegister";
+import PrivateRoute from "./components/PrivateRoute";
+import UserRegister from "./pages/userRegister/UserRegister";
+import Drivers from "./pages/drivers/Drivers";
+import EditDriversRecord from "./pages/editDriversRecord/EditDriversRecord";
+
+import Layout from "./components/Layout";
+import EditTruckRegister from "./pages/editTruckRegister/EditTruckRegister";
+import Vehicles from "./pages/vehicles/Vehicles";
+
+export default function App() {
+  return (
+    <Routes>
+      {/* Rota pública */}
+      <Route path="/" element={<Login />} />
+
+      {/* Rotas privadas com sidebar/layout */}
+      <Route
+        path="/dashboard"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Dashboard />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/register"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Register />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/report"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <GeneralReport />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/drivers/driverregister"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <DriverRegister />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/truckregister"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <TruckRegister />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/userregister"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <UserRegister />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/drivers"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <Drivers />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/drivers/driveredit/:id"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <EditDriversRecord />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+       <Route
+        path="/vehicles" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <Vehicles/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+      <Route
+        path="/truckregister/edit/:id" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <EditTruckRegister />
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+      
+    </Routes>
+  );
+}
