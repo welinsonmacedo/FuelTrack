@@ -34,7 +34,7 @@ export default function DriverRegister() {
     <div style={{ display: "flex", height: "100vh" }}>
       
       <main style={{ padding: "40px", flex: 1 }}>
-        <h1>Cadastro de Motorista</h1>
+        <h1 style={styles.title}>Cadastro de Motorista</h1>
         <form onSubmit={handleSubmit} style={styles.form}>
           <input
             placeholder="Nome"
@@ -83,30 +83,6 @@ export default function DriverRegister() {
   );
 }
 
-function Sidebar() {
-  return (
-    <aside
-      style={{
-        width: "250px",
-        backgroundColor: "#2c3e50",
-        color: "#ecf0f1",
-        display: "flex",
-        flexDirection: "column",
-        padding: "20px",
-      }}
-    >
-      <h2 style={{ fontSize: "24px", textAlign: "center" }}>FuelTrackPro</h2>
-      <nav style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <button style={styles.menuItem}>Motoristas</button>
-        <button style={styles.menuItem}>Caminhões</button>
-        <button style={styles.menuItem}>Viagens</button>
-        <button style={styles.menuItem}>Abastecimentos</button>
-        <button style={styles.menuItem}>Relatórios</button>
-      </nav>
-    </aside>
-  );
-}
-
 const styles = {
   form: {
     display: "flex",
@@ -121,6 +97,9 @@ const styles = {
     padding: "10px",
     border: "none",
     borderRadius: "5px",
+  },
+    title: {
+    fontSize:"20px",
   },
   menuItem: {
     backgroundColor: "transparent",

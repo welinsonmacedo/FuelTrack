@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../services/firebase";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 export default function Drivers() {
   const [motoristas, setMotoristas] = useState([]);
- const navigate = useNavigate();
+  const [selectedMotorista, setSelectedMotorista] = useState(null);
+  const navigate = useNavigate();
+
   const fetchMotoristas = async () => {
     const querySnapshot = await getDocs(collection(db, "motoristas"));
     const lista = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -15,6 +17,7 @@ export default function Drivers() {
   const excluirMotorista = async (id) => {
     if (window.confirm("Tem certeza que deseja excluir este motorista?")) {
       await deleteDoc(doc(db, "motoristas", id));
+      setSelectedMotorista(null);
       fetchMotoristas();
     }
   };
@@ -26,32 +29,67 @@ export default function Drivers() {
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Lista de Motoristas</h1>
-      <button style={styles.button} onClick={() => navigate("driverregister")}>Cadastrar Motorista</button>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>CPF</th>
-            <th>CNH</th>
-            <th>Categoria</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {motoristas.map((moto) => (
-            <tr key={moto.id}>
-              <td>{moto.nome}</td>
-              <td>{moto.cpf}</td>
-              <td>{moto.cnh}</td>
-              <td>{moto.categoria}</td>
-              <td>
-               <button onClick={() => navigate(`driveredit/${moto.id}`)}>Editar</button>
-                <button onClick={() => excluirMotorista(moto.id)} style={styles.delete}>Excluir</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <button style={styles.button} onClick={() => navigate("driverregister")}>
+        Cadastrar Motorista
+      </button>
+
+      <ul style={styles.list}>
+        {motoristas.map((moto) => (
+          <li
+            key={moto.id}
+            style={styles.listItem}
+            onClick={() => setSelectedMotorista(moto)}
+          >
+            {moto.nome}
+          </li>
+        ))}
+      </ul>
+
+      {selectedMotorista && (
+        <div style={styles.modalOverlay} onClick={() => setSelectedMotorista(null)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ marginBottom: "20px" }}>{selectedMotorista.nome}</h2>
+            <div style={styles.infoRow}>
+              <span style={styles.label}>CPF:</span>
+              <span>{selectedMotorista.cpf}</span>
+            </div>
+            <div style={styles.infoRow}>
+              <span style={styles.label}>CNH:</span>
+              <span>{selectedMotorista.cnh}</span>
+            </div>
+            <div style={styles.infoRow}>
+              <span style={styles.label}>Categoria:</span>
+              <span>{selectedMotorista.categoria}</span>
+            </div>
+
+            <div style={styles.modalButtons}>
+              <button
+                style={styles.button}
+                onClick={() => {
+                  navigate(`driveredit/${selectedMotorista.id}`);
+                  setSelectedMotorista(null);
+                }}
+              >
+                Editar
+              </button>
+
+              <button
+                style={styles.delete}
+                onClick={() => excluirMotorista(selectedMotorista.id)}
+              >
+                Excluir
+              </button>
+
+              <button
+                style={styles.cancel}
+                onClick={() => setSelectedMotorista(null)}
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -69,25 +107,89 @@ const styles = {
     color: "#2c3e50",
   },
   button: {
+    flex: 1,
     backgroundColor: "#3498db",
     color: "white",
-    padding: "10px 20px",
     border: "none",
+    padding: "10px ",
     borderRadius: "5px",
     cursor: "pointer",
-    marginBottom: "20px",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
+    marginRight: "10px",
+    fontWeight: "bold",
+    fontSize: "14px",
+    transition: "background-color 0.2s",
   },
   delete: {
-    marginLeft: "10px",
+    flex: 1,
     backgroundColor: "#e74c3c",
     color: "white",
     border: "none",
-    padding: "5px 10px",
+    padding: "10px 0",
     borderRadius: "5px",
     cursor: "pointer",
-  }
+    marginRight: "10px",
+    fontWeight: "bold",
+    fontSize: "14px",
+    transition: "background-color 0.2s",
+  },
+  cancel: {
+    flex: 1,
+    backgroundColor: "#7f8c8d",
+    color: "white",
+    border: "none",
+    padding: "10px 0",
+    borderRadius: "5px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    fontSize: "14px",
+    transition: "background-color 0.2s",
+  },
+  list: {
+    listStyle: "none",
+    padding: 0,
+    maxWidth: "400px",
+  },
+  listItem: {
+    backgroundColor: "white",
+    padding: "10px 15px",
+    marginBottom: "8px",
+    borderRadius: "5px",
+    cursor: "pointer",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+  },
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
+  },
+  modal: {
+    backgroundColor: "white",
+    padding: "30px",
+    borderRadius: "8px",
+    maxWidth: "400px",
+    width: "90%",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+  },
+  infoRow: {
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems:"left",
+    marginBottom: "10px",
+  },
+  label: {
+    fontWeight: "bold",
+    width: "90px",
+  },
+  modalButtons: {
+    marginTop: "25px",
+    display: "flex",
+    justifyContent: "space-between",
+  },
 };

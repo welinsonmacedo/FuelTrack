@@ -5,12 +5,13 @@ export default function Sidebar({ onNavigate }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
+    { label: "Lançar", path: "/register" },
     { label: "Motoristas", path: "/drivers" },
     { label: "Veículos", path: "/vehicles" },
-    { label: "Abastecimentos", path: "/register" },
+    { label: "Abastecimentos", path: "/supplyAndTravelList" },
     { label: "Relatórios", path: "/report" },
     { label: "Cadastros", path: "/userregister" },
-    { label: "Configurações", path: "/configuracoes" },
+    { label: "Configurações", path: "/" },
   ];
 
   function handleNavigate(path) {

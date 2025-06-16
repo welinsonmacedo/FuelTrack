@@ -1,12 +1,8 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../services/firebase";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import {
   BarChart,
   Bar,
@@ -17,37 +13,84 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-
-export default function GeneralReport() {
+export default function RelatorioMedias() {
   const [caminhao, setCaminhao] = useState("");
   const [motorista, setMotorista] = useState("");
   const [periodoInicio, setPeriodoInicio] = useState("");
   const [periodoFim, setPeriodoFim] = useState("");
-  const [dados, setDados] = useState([]);
-  const [mediaGeral, setMediaGeral] = useState(0);
-  const [mediaSobreMedia, setMediaSobreMedia] = useState(0);
 
   const [listaCaminhoes, setListaCaminhoes] = useState([]);
   const [listaMotoristas, setListaMotoristas] = useState([]);
 
-  // Dados resumo por motorista
+  const [dados, setDados] = useState([]);
+  const [mediaGeral, setMediaGeral] = useState(0);
+  const [mediaSobreMedia, setMediaSobreMedia] = useState(0);
   const [resumoMotoristas, setResumoMotoristas] = useState([]);
 
-  useEffect(() => {
-    async function fetchData() {
-      const snapV = await getDocs(collection(db, "veiculos"));
-      setListaCaminhoes(snapV.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  // Mapas para consulta rápida dos dados
+  const mapaCaminhoes = {};
+  const mapaMotoristas = {};
 
-      const snapM = await getDocs(collection(db, "motoristas"));
-      setListaMotoristas(snapM.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }
-    fetchData();
+  // Preencher os mapas sempre que listas mudarem
+  listaCaminhoes.forEach((c) => {
+    mapaCaminhoes[c.id] = c;
+  });
+  listaMotoristas.forEach((m) => {
+    mapaMotoristas[m.id] = m;
+  });
+
+  // Função para carregar caminhões e motoristas
+  async function carregarListas() {
+    const qCaminhoes = query(collection(db, "veiculos"));
+    const snapCaminhoes = await getDocs(qCaminhoes);
+    const arrCaminhoes = snapCaminhoes.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setListaCaminhoes(arrCaminhoes);
+
+    const qMotoristas = query(collection(db, "motoristas"));
+    const snapMotoristas = await getDocs(qMotoristas);
+    const arrMotoristas = snapMotoristas.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setListaMotoristas(arrMotoristas);
+  }
+
+  // Ao abrir a página, carregar listas e definir período do mês atual
+  useEffect(() => {
+    carregarListas();
+
+    const now = new Date();
+    const primeiroDiaMes = new Date(now.getFullYear(), now.getMonth(), 1);
+    const ultimoDiaMes = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    setPeriodoInicio(primeiroDiaMes.toISOString().slice(0, 10));
+    setPeriodoFim(ultimoDiaMes.toISOString().slice(0, 10));
   }, []);
 
-  const gerarRelatorio = async (e) => {
-    e.preventDefault();
+  // Gerar relatório quando filtros ou listas mudarem (e período estiver definido)
+  useEffect(() => {
+    if (
+      periodoInicio &&
+      periodoFim &&
+      listaCaminhoes.length > 0 &&
+      listaMotoristas.length > 0
+    ) {
+      gerarRelatorio();
+    }
+  }, [
+    caminhao,
+    motorista,
+    periodoInicio,
+    periodoFim,
+    listaCaminhoes,
+    listaMotoristas,
+  ]);
+
+  async function gerarRelatorio(e) {
+    if (e) e.preventDefault();
 
     if (!periodoInicio || !periodoFim) {
       alert("Informe o período inicial e final.");
@@ -59,97 +102,127 @@ export default function GeneralReport() {
     const fim = new Date(periodoFim);
     fim.setHours(23, 59, 59, 999);
 
-    let filtros = [
+    // Consultar viagens com filtros
+    const filtrosViagens = [
       where("dataFim", ">=", inicio.toISOString()),
       where("dataFim", "<=", fim.toISOString()),
     ];
-    if (caminhao) filtros.push(where("caminhao", "==", caminhao));
-    if (motorista) filtros.push(where("motorista", "==", motorista));
 
-    const q = query(collection(db, "viagens"), ...filtros);
-    const snapshot = await getDocs(q);
+    if (caminhao) filtrosViagens.push(where("caminhao", "==", caminhao));
+    if (motorista) filtrosViagens.push(where("motorista", "==", motorista));
 
-    let lista = [];
-    let somaKM = 0;
-    let somaLitros = 0;
-    let somaMedias = 0;
+    const qViagens = query(collection(db, "viagens"), ...filtrosViagens);
+    const snapViagens = await getDocs(qViagens);
+    const listaViagens = snapViagens.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
-    // Para resumo por motorista
-    const resumoMap = {};
+    // Consultar abastecimentos no mesmo período (para os filtros)
+    const filtrosAbastecimentos = [
+      where("dataHora", ">=", inicio.toISOString()),
+      where("dataHora", "<=", fim.toISOString()),
+    ];
+    if (caminhao) filtrosAbastecimentos.push(where("caminhao", "==", caminhao));
+    if (motorista)
+      filtrosAbastecimentos.push(where("motorista", "==", motorista));
 
-    for (const docSnap of snapshot.docs) {
-      const v = docSnap.data();
-      const kmRodado = v.kmFinal - v.kmInicial;
+    const qAbastecimentos = query(
+      collection(db, "abastecimentos"),
+      ...filtrosAbastecimentos
+    );
+    const snapAbastecimentos = await getDocs(qAbastecimentos);
+    const listaAbastecimentos = snapAbastecimentos.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
-      const abSnap = await getDocs(
-        query(
-          collection(db, "abastecimentos"),
-          where("caminhao", "==", v.caminhao),
-          where("motorista", "==", v.motorista),
-          where("dataHora", "==", v.dataFim)
+    // Construir os dados do relatório combinando viagens e abastecimentos
+    const dadosParaRelatorio = listaViagens.map((viagem) => {
+      const kmRodado = viagem.kmFinal - viagem.kmInicial;
+
+      // Filtrar abastecimentos desta viagem (entre dataInicio e dataFim da viagem)
+      const litrosViagem = listaAbastecimentos
+        .filter(
+          (ab) =>
+            ab.caminhao === viagem.caminhao &&
+            ab.motorista === viagem.motorista &&
+            new Date(ab.dataHora) >= new Date(viagem.dataInicio) &&
+            new Date(ab.dataHora) <= new Date(viagem.dataFim)
         )
-      );
-      let litros = 0;
-      abSnap.forEach(a => litros += a.data().litros);
+        .reduce((acc, ab) => acc + (ab.litros || 0), 0);
 
-      const media = litros ? kmRodado / litros : 0;
-      somaKM += kmRodado;
-      somaLitros += litros;
-      somaMedias += media;
-
-      lista.push({
-        nome: `Viagem ${docSnap.id.substring(0, 5)}`,
-        km: kmRodado,
-        litros,
-        media: Number(media.toFixed(2)),
-      });
-
-      // Construir resumo por motorista
-      if (!resumoMap[v.motorista]) {
-        resumoMap[v.motorista] = { km: 0, litros: 0 };
-      }
-      resumoMap[v.motorista].km += kmRodado;
-      resumoMap[v.motorista].litros += litros;
-    }
-
-    // Após agrupar resumo, formatar array e puxar nome do motorista
-    const resumoArray = Object.entries(resumoMap).map(([idMotorista, dados]) => {
-      const motoristaObj = listaMotoristas.find(m => m.id === idMotorista);
-      const nomeMotorista = motoristaObj ? motoristaObj.nome : idMotorista;
-      const mediaMotorista = dados.litros ? dados.km / dados.litros : 0;
+      const media = litrosViagem ? kmRodado / litrosViagem : 0;
 
       return {
-        motorista: nomeMotorista,
+        placa: mapaCaminhoes[viagem.caminhao]?.placa || "Sem placa",
+        modelo: mapaCaminhoes[viagem.caminhao]?.modelo || "Sem modelo",
+        kmRodado,
+        litros: litrosViagem,
+        media: Number(media.toFixed(2)),
+        motoristaNome:
+          mapaMotoristas[viagem.motorista]?.nome ||
+          viagem.motorista ||
+          "Sem nome",
+      };
+    });
+
+    // Resumo por motorista
+    const resumoMap = {};
+    dadosParaRelatorio.forEach((item) => {
+      const m = item.motoristaNome;
+      if (!resumoMap[m]) resumoMap[m] = { km: 0, litros: 0 };
+      resumoMap[m].km += item.kmRodado;
+      resumoMap[m].litros += item.litros;
+    });
+
+    const resumoArray = Object.entries(resumoMap).map(([motorista, dados]) => {
+      const mediaMotorista = dados.litros ? dados.km / dados.litros : 0;
+      return {
+        motorista,
         km: dados.km,
         litros: dados.litros,
         media: Number(mediaMotorista.toFixed(2)),
       };
     });
 
-    const mediaG = somaLitros ? somaKM / somaLitros : 0;
-    const mediaM = lista.length ? somaMedias / lista.length : 0;
+    // Cálculo média geral e média das médias
+    const somaKM = dadosParaRelatorio.reduce((acc, i) => acc + i.kmRodado, 0);
+    const somaLitros = dadosParaRelatorio.reduce((acc, i) => acc + i.litros, 0);
+    const somaMedias = dadosParaRelatorio.reduce((acc, i) => acc + i.media, 0);
 
-    setDados(lista);
+    const mediaG = somaLitros ? somaKM / somaLitros : 0;
+    const mediaM = dadosParaRelatorio.length
+      ? somaMedias / dadosParaRelatorio.length
+      : 0;
+
+    setDados(dadosParaRelatorio);
     setMediaGeral(Number(mediaG.toFixed(2)));
     setMediaSobreMedia(Number(mediaM.toFixed(2)));
     setResumoMotoristas(resumoArray);
-  };
-
-  // Exportar PDF resumo motoristas
+  }
+function formatarDataBrasileira(dataISO) {
+  const [ano, mes, dia] = dataISO.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
   function exportarPDFResumoMotoristas(dadosResumo) {
     const doc = new jsPDF();
-
+ doc.text(
+  `Período: ${formatarDataBrasileira(periodoInicio)} até ${formatarDataBrasileira(periodoFim)}`,
+  14,
+  10
+);
     doc.text("Resumo de Médias por Motorista", 14, 15);
 
-    const head = [['Motorista', 'Total KM', 'Total Litros', 'Média km/l']];
-    const body = dadosResumo.map(item => [
+    const head = [["Motorista", "Total KM", "Total Litros", "Média km/l"]];
+    const body = dadosResumo.map((item) => [
       item.motorista,
       item.km.toFixed(2),
       item.litros.toFixed(2),
       item.media.toFixed(2),
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: 20,
       head: head,
       body: body,
@@ -171,24 +244,48 @@ export default function GeneralReport() {
         <h1 style={styles.title}>Relatório de Médias</h1>
 
         <form onSubmit={gerarRelatorio} style={styles.form}>
-          <select value={caminhao} onChange={e => setCaminhao(e.target.value)} style={styles.input}>
+          <select
+            value={caminhao}
+            onChange={(e) => setCaminhao(e.target.value)}
+            style={styles.input}
+          >
             <option value="">Todos Caminhões</option>
-            {listaCaminhoes.map(c => (
-              <option key={c.id} value={c.id}>{c.placa} – {c.modelo}</option>
+            {listaCaminhoes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.placa} – {c.modelo}
+              </option>
             ))}
           </select>
 
-          <select value={motorista} onChange={e => setMotorista(e.target.value)} style={styles.input}>
+          <select
+            value={motorista}
+            onChange={(e) => setMotorista(e.target.value)}
+            style={styles.input}
+          >
             <option value="">Todos Motoristas</option>
-            {listaMotoristas.map(m => (
-              <option key={m.id} value={m.id}>{m.nome}</option>
+            {listaMotoristas.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.nome}
+              </option>
             ))}
           </select>
 
-          <input type="date" value={periodoInicio} onChange={e => setPeriodoInicio(e.target.value)} style={styles.input} />
-          <input type="date" value={periodoFim} onChange={e => setPeriodoFim(e.target.value)} style={styles.input} />
+          <input
+            type="date"
+            value={periodoInicio}
+            onChange={(e) => setPeriodoInicio(e.target.value)}
+            style={styles.input}
+          />
+          <input
+            type="date"
+            value={periodoFim}
+            onChange={(e) => setPeriodoFim(e.target.value)}
+            style={styles.input}
+          />
 
-          <button type="submit" style={styles.button}>Gerar Relatório</button>
+          <button type="submit" style={styles.button}>
+            Gerar Relatório
+          </button>
         </form>
 
         {dados.length > 0 && (
@@ -197,35 +294,58 @@ export default function GeneralReport() {
 
             <div style={{ overflowX: "auto", width: "100%" }}>
               <table style={styles.tabela}>
-                <thead><tr><th>Viagem</th><th>KM</th><th>Litros</th><th>Média km/l</th></tr></thead>
-                <tbody>{dados.map((d,i)=>(
-                  <tr key={i}>
-                    <td>{d.nome}</td><td>{d.km}</td><td>{d.litros}</td><td>{d.media}</td>
+                <thead>
+                  <tr>
+                    <th>Placa do Veículo</th>
+                    <th>Modelo</th>
+                    <th>Motorista</th>
+                    <th>KM Rodado</th>
+                    <th>Litros</th>
+                    <th>Média km/l</th>
                   </tr>
-                ))}</tbody>
+                </thead>
+                <tbody>
+                  {dados.map((d, i) => (
+                    <tr key={i}>
+                      <td>{d.placa}</td>
+                      <td>{d.modelo}</td>
+                      <td>{d.motoristaNome}</td>
+                      <td>{d.kmRodado}</td>
+                      <td>{d.litros.toFixed(2)}</td>
+                      <td>{d.media}</td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
 
-            <p><strong>Média Geral (total km / total litros):</strong> {mediaGeral} km/l</p>
-            <p><strong>Média das Médias:</strong> {mediaSobreMedia} km/l</p>
+            <p>
+              <strong>Média Geral (total km / total litros):</strong>{" "}
+              {mediaGeral} km/l
+            </p>
+            <p>
+              <strong>Média das Médias:</strong> {mediaSobreMedia} km/l
+            </p>
 
             <div style={{ width: "100%", height: 300, marginTop: 20 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dados}>
-                  <XAxis dataKey="nome"/>
-                  <YAxis/>
-                  <Tooltip/>
-                  <Legend/>
-                  <Bar dataKey="km" fill="#3498db" name="KM"/>
-                  <Bar dataKey="litros" fill="#2ecc71" name="Litros"/>
-                  <Bar dataKey="media" fill="#e67e22" name="Média"/>
+                  <XAxis dataKey="placa" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="kmRodado" fill="#3498db" name="KM" />
+                  <Bar dataKey="litros" fill="#2ecc71" name="Litros" />
+                  <Bar dataKey="media" fill="#e67e22" name="Média" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
-            {/* NOVO RELATÓRIO RESUMO POR MOTORISTA */}
             <h2 style={{ marginTop: 40 }}>Resumo por Motorista</h2>
-            <button onClick={handleExportarPDF} style={{ ...styles.button, marginBottom: 10 }}>
+            <button
+              onClick={handleExportarPDF}
+              style={{ ...styles.button, marginBottom: 10 }}
+            >
               Exportar Resumo PDF
             </button>
 
@@ -240,12 +360,24 @@ export default function GeneralReport() {
                   </tr>
                 </thead>
                 <tbody>
-                  {resumoMotoristas.map((r, i) => (
+                  {dados.map((r, i) => (
                     <tr key={i}>
-                      <td>{r.motorista}</td>
-                      <td>{r.km.toFixed(2)}</td>
-                      <td>{r.litros.toFixed(2)}</td>
-                      <td>{r.media.toFixed(2)}</td>
+                      <td>{r.motoristaNome || "Sem nome"}</td>
+                      <td>
+                        {typeof r.kmRodado === "number"
+                          ? r.kmRodado.toFixed(2)
+                          : "0.00"}
+                      </td>
+                      <td>
+                        {typeof r.litros === "number"
+                          ? r.litros.toFixed(2)
+                          : "0.00"}
+                      </td>
+                      <td>
+                        {typeof r.media === "number"
+                          ? r.media.toFixed(2)
+                          : "0.00"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -260,55 +392,58 @@ export default function GeneralReport() {
 
 const styles = {
   container: {
-    display:"flex",
-    height:"100vh",
-    fontFamily:"Arial",
-    flexDirection: "column",  // Para responsividade vertical em mobile
+    display: "flex",
+    flexDirection: "column",
+    height: "100vh",
+    fontFamily: "Arial",
     padding: 10,
   },
   main: {
-    flex:1,
-    padding:20,
-    background:"#ecf0f1",
-    overflowY:"auto",
-    maxWidth: "100%",
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    padding: 20,
+    background: "#ecf0f1",
   },
-  title: { fontSize:26, marginBottom:20 },
+  title: { fontSize: 26, marginBottom: 20 },
   form: {
-    display:"flex",
-    flexWrap:"wrap",
-    gap:10,
-    marginBottom:30,
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 10,
+    marginBottom: 10,
     justifyContent: "center",
   },
   input: {
-    padding:10,
-    borderRadius:5,
-    border:"1px solid #ccc",
-    flex:"1 0 200px",
+    padding: 10,
+    borderRadius: 5,
+    border: "1px solid #ccc",
+    flex: "1 0 200px",
     minWidth: 0,
     boxSizing: "border-box",
   },
   button: {
-    background:"#27ae60",
-    color:"#fff",
-    padding:12,
-    borderRadius:5,
-    border:"none",
-    cursor:"pointer",
-    flex:"1 0 150px",
+    background: "#27ae60",
+    color: "#fff",
+    padding: 12,
+    borderRadius: 5,
+    border: "none",
+    cursor: "pointer",
+    flex: "1 0 150px",
     minWidth: 0,
   },
   resultado: {
-    background:"#fff",
-    padding:20,
-    borderRadius:10,
-    boxShadow:"0 0 8px rgba(0,0,0,0.1)",
+    flex: 1, // ocupa o máximo do espaço vertical restante
+    overflowY: "auto", // scroll interno se ultrapassar
+    background: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    boxShadow: "0 0 8px rgba(0,0,0,0.1)",
+    minHeight: 0, // importante para scroll funcionar em flex container
   },
   tabela: {
-    width:"100%",
-    borderCollapse:"collapse",
-    marginTop:20,
-    minWidth:"600px",
+    width: "100%",
+    borderCollapse: "collapse",
+    marginTop: 20,
+    minWidth: "700px",
   },
 };
