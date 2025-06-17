@@ -1,16 +1,24 @@
 import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../services/firebase";
 
 export default function Logout() {
-  useEffect(() => {
-    async function doLogout() {
-      await signOut(auth);
-      localStorage.clear();
-      window.location.href = "/login"; // recarrega e limpa histórico
-    }
-    doLogout();
-  }, []);
+  const navigate = useNavigate();
 
-  return <p>Saindo...</p>;
+  useEffect(() => {
+    async function sair() {
+      await signOut(auth); // encerra sessão
+      navigate("/", { replace: true });
+    }
+
+    sair();
+  }, [navigate]);
+
+  return (
+    <div style={{ padding: 20, textAlign: "center" }}>
+      <h2>Saindo...</h2>
+      <p>Você está sendo desconectado.</p>
+    </div>
+  );
 }

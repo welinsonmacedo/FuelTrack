@@ -1,8 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Sidebar.css";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../services/firebase";
 
-export default function Sidebar({  aberto, onToggle, onNavigate  }) {
+export default function Sidebar({ aberto, onToggle, onNavigate }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserEmail(user.email);
+      } else {
+        setUserEmail("");
+      }
+    });
+
+    return () => unsubscribe(); // limpa o listener ao desmontar
+  }, []);
 
   const menuItems = [
     { label: "Lançar", path: "/register" },
@@ -11,7 +26,7 @@ export default function Sidebar({  aberto, onToggle, onNavigate  }) {
     { label: "Abastecimentos", path: "/supplyAndTravelList" },
     { label: "Relatórios", path: "/report" },
     { label: "Cadastros", path: "/generalRegistration" },
-    { label: "Logout", path: "/" },
+    { label: "Logout", path: "/logout" }, // Corrigido path
   ];
 
   function handleNavigate(path) {
@@ -50,6 +65,13 @@ export default function Sidebar({  aberto, onToggle, onNavigate  }) {
             </button>
           ))}
         </nav>
+        
+        {/* Rodapé com e-mail */}
+        <div className="sidebar-footer">
+          <p style={{ fontSize: "0.85rem", color: "#bdc3c7",paddingTop: "10vw",}}>
+            {userEmail}
+          </p>
+        </div>
       </aside>
 
       {isOpen && <div className="overlay" onClick={() => setIsOpen(false)} />}

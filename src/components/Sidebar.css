@@ -42,7 +42,13 @@
 .hamburger {
   display: none;
 }
-
+.sidebar-footer {
+ 
+ 
+  text-align: center;
+  font-size: 0.8rem;
+  color: #ff0000;
+}
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;

@@ -10,8 +10,43 @@ export default function DriverRegister() {
   const [dataValidade, setDataValidade] = useState("");
   const [cpf, setCpf] = useState("");
 
+  const validarCPF = (cpf) => {
+    cpf = cpf.replace(/[^\d]+/g, '');
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+
+    let soma = 0;
+    for (let i = 0; i < 9; i++) soma += parseInt(cpf.charAt(i)) * (10 - i);
+    let resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpf.charAt(9))) return false;
+
+    soma = 0;
+    for (let i = 0; i < 10; i++) soma += parseInt(cpf.charAt(i)) * (11 - i);
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpf.charAt(10))) return false;
+
+    return true;
+  };
+
+  const validarCNH = (cnh) => {
+    const apenasNumeros = cnh.replace(/\D/g, '');
+    return apenasNumeros.length === 11;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validarCPF(cpf)) {
+      alert("CPF inválido. Verifique e tente novamente.");
+      return;
+    }
+
+    if (!validarCNH(cnh)) {
+      alert("CNH inválida. Deve conter 11 números.");
+      return;
+    }
+
     await addDoc(collection(db, "motoristas"), {
       nome,
       cnh,
@@ -21,6 +56,7 @@ export default function DriverRegister() {
       cpf,
       createdAt: new Date(),
     });
+
     alert("Motorista cadastrado com sucesso!");
     setNome("");
     setCnh("");
@@ -32,7 +68,6 @@ export default function DriverRegister() {
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
-      
       <main style={{ padding: "40px", flex: 1 }}>
         <h1 style={styles.title}>Cadastro de Motorista</h1>
         <form onSubmit={handleSubmit} style={styles.form}>
@@ -41,18 +76,21 @@ export default function DriverRegister() {
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             style={styles.input}
+            required
           />
           <input
             placeholder="CNH"
             value={cnh}
             onChange={(e) => setCnh(e.target.value)}
             style={styles.input}
+            required
           />
           <input
             placeholder="Categoria"
             value={categoria}
             onChange={(e) => setCategoria(e.target.value)}
             style={styles.input}
+            required
           />
           <input
             type="date"
@@ -60,6 +98,7 @@ export default function DriverRegister() {
             value={dataEmissao}
             onChange={(e) => setDataEmissao(e.target.value)}
             style={styles.input}
+            required
           />
           <input
             type="date"
@@ -67,12 +106,14 @@ export default function DriverRegister() {
             value={dataValidade}
             onChange={(e) => setDataValidade(e.target.value)}
             style={styles.input}
+            required
           />
           <input
             placeholder="CPF"
             value={cpf}
             onChange={(e) => setCpf(e.target.value)}
             style={styles.input}
+            required
           />
           <button style={styles.button} type="submit">
             Salvar
@@ -98,8 +139,8 @@ const styles = {
     border: "none",
     borderRadius: "5px",
   },
-    title: {
-    fontSize:"20px",
+  title: {
+    fontSize: "20px",
   },
   menuItem: {
     backgroundColor: "transparent",

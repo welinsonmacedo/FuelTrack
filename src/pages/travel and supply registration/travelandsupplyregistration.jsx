@@ -172,7 +172,7 @@ export default function TravelAndSupplyRegistration() {
       borderRadius: "5px",
       border: "1px solid #ccc",
       fontSize: "16px",
-      width: "100%",
+      width: "90%",
     },
     textarea: {
       padding: "10px",
@@ -180,7 +180,7 @@ export default function TravelAndSupplyRegistration() {
       border: "1px solid #ccc",
       fontSize: "16px",
       minHeight: "80px",
-      width: "100%",
+      width: "90%",
     },
     button: {
       backgroundColor: "#27ae60",

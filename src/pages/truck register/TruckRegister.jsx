@@ -10,12 +10,23 @@ export default function TruckRegister() {
   const [capacidadeTanque, setCapacidadeTanque] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const validarPlaca = (placa) => {
+    const placaFormatada = placa.trim().toUpperCase();
+    // Regex aceita placas antigas (ABC1234) ou Mercosul (ABC1D23)
+    const regex = /^[A-Z]{3}[0-9]{4}$|^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/;
+    return regex.test(placaFormatada);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validação simples
     if (!placa || !modelo || !marca || !ano || !capacidadeTanque) {
       alert("Por favor, preencha todos os campos.");
+      return;
+    }
+
+    if (!validarPlaca(placa)) {
+      alert("Placa inválida. Use o formato ABC1234 ou ABC1D23.");
       return;
     }
 
@@ -32,7 +43,7 @@ export default function TruckRegister() {
 
       alert("Caminhão cadastrado com sucesso!");
 
-      // Resetar o formulário
+      // Resetar campos
       setPlaca("");
       setModelo("");
       setMarca("");
@@ -53,7 +64,7 @@ export default function TruckRegister() {
           <input
             placeholder="Placa"
             value={placa}
-            onChange={(e) => setPlaca(e.target.value)}
+            onChange={(e) => setPlaca(e.target.value.toUpperCase())} // converte pra maiúsculo enquanto digita
             style={styles.input}
             disabled={loading}
           />

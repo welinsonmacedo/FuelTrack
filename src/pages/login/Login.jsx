@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { auth } from "../../services/firebase";
 
 export default function Login() {
@@ -13,6 +13,7 @@ export default function Login() {
     setErro("");
 
     try {
+      await setPersistence(auth, browserLocalPersistence); // persistência
       await signInWithEmailAndPassword(auth, email, senha);
       window.location.replace("/dashboard");
     } catch (error) {
@@ -31,7 +32,7 @@ export default function Login() {
     <div style={styles.container}>
       <div style={styles.card}>
         <img src="logo.png" alt="FuelTrackPro Logo" style={styles.logo} />
-        <h2 style={styles.title}>Login</h2>
+        <h2 style={styles.title}>Entrar no sistema</h2>
         <form onSubmit={handleLogin} style={styles.form}>
           <input
             type="email"
@@ -41,6 +42,7 @@ export default function Login() {
             style={styles.input}
             required
           />
+
           <div style={styles.passwordContainer}>
             <input
               type={senhaVisivel ? "text" : "password"}
@@ -64,10 +66,10 @@ export default function Login() {
               {senhaVisivel ? "🙈" : "👁️"}
             </span>
           </div>
-          <button type="submit" style={styles.button}>
-            Entrar
-          </button>
+
+          <button type="submit" style={styles.button}>Entrar</button>
         </form>
+
         {erro && <p style={styles.error}>{erro}</p>}
       </div>
     </div>
@@ -76,7 +78,7 @@ export default function Login() {
 
 const styles = {
   container: {
-    backgroundColor: "#f7f9fc",
+    backgroundColor: "#f0f2f5",
     height: "100vh",
     display: "flex",
     alignItems: "center",
@@ -86,77 +88,68 @@ const styles = {
   },
   card: {
     backgroundColor: "#fff",
-    padding: "40px 35px",
+    padding: "45px 35px",
     borderRadius: "12px",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
     width: "100%",
-    maxWidth: "400px",
+    maxWidth: "380px",
     textAlign: "center",
     boxSizing: "border-box",
   },
   logo: {
-    width: "130px",
-    marginBottom: "25px",
+    width: "120px",
+    marginBottom: "20px",
     userSelect: "none",
   },
   title: {
-    color: "#34495e",
+    color: "#2c3e50",
     marginBottom: "25px",
     fontWeight: "600",
-    fontSize: "1.8rem",
+    fontSize: "1.5rem",
   },
   form: {
     display: "flex",
     flexDirection: "column",
-    width: "100%",
-    boxSizing: "border-box",
+    gap: "15px", // espaçamento entre campos
   },
   passwordContainer: {
     position: "relative",
-    width: "100%",
-    marginBottom: "20px",
-    boxSizing: "border-box",
   },
   input: {
     width: "100%",
-    padding: "14px 45px 14px 15px", // paddingRight grande pra dar espaço pro olho
-    border: "1.8px solid #d1d9e6",
-    borderRadius: "8px",
-    fontSize: "16px",
-    color: "#34495e",
-    outline: "none",
-    transition: "border-color 0.3s ease, box-shadow 0.3s ease",
-    boxSizing: "border-box", // ESSENCIAL pra input respeitar o width 100%
-    marginTop:"10px"
+    padding: "12px 15px",
+    paddingRight: "45px",
+    border: "1.6px solid #ccc",
+    borderRadius: "6px",
+    fontSize: "15px",
+    boxSizing: "border-box",
+    transition: "border 0.3s ease",
   },
   eyeIcon: {
     position: "absolute",
-    right: "15px",
+    right: "12px",
     top: "50%",
     transform: "translateY(-50%)",
     cursor: "pointer",
-    fontSize: "20px",
-    color: "#7f8c8d",
+    fontSize: "18px",
+    color: "#888",
     userSelect: "none",
-    transition: "color 0.3s ease",
   },
   button: {
-    padding: "14px",
-    backgroundColor: "#2980b9",
+    padding: "12px",
+    backgroundColor: "#3498db",
     color: "#fff",
     border: "none",
-    borderRadius: "8px",
-    fontSize: "18px",
-    cursor: "pointer",
+    borderRadius: "6px",
+    fontSize: "16px",
     fontWeight: "600",
-    boxShadow: "0 4px 12px rgba(41, 128, 185, 0.4)",
-    transition: "background-color 0.3s ease, box-shadow 0.3s ease",
-    userSelect: "none",
-    width: "100%",
+    cursor: "pointer",
+    transition: "background-color 0.3s ease, box-shadow 0.2s ease",
   },
   error: {
     color: "#e74c3c",
-    marginTop: "18px",
+    marginTop: "16px",
     fontWeight: "600",
+    fontSize: "14px",
   },
 };
