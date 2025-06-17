@@ -25,6 +25,13 @@ export default function TravelAndSupplyRegistration() {
   const [caminhoes, setCaminhoes] = useState([]);
   const [kmMaxAnterior, setKmMaxAnterior] = useState(null);
   const [capacidadeTanque, setCapacidadeTanque] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 600);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const buscarMotoristas = async () => {
@@ -118,7 +125,6 @@ export default function TravelAndSupplyRegistration() {
 
     alert("Viagem e abastecimento salvos com sucesso!");
 
-    // reset
     setMotorista("");
     setCaminhao("");
     setKmInicial("");
@@ -128,6 +134,64 @@ export default function TravelAndSupplyRegistration() {
     setObs("");
     setLitros("");
     setPrecoLitro("");
+  };
+
+  const styles = {
+    container: {
+      display: "flex",
+      height: "100vh",
+      fontFamily: "Arial, sans-serif",
+      flexDirection: isMobile ? "column" : "row",
+    },
+    main: {
+      flex: 1,
+      padding: isMobile ? "20px" : "40px",
+      backgroundColor: "#ecf0f1",
+      overflowY: "auto",
+    },
+    title: {
+      fontSize: isMobile ? "20px" : "26px",
+      marginBottom: "20px",
+      color: "#2c3e50",
+      textAlign: isMobile ? "center" : "left",
+    },
+    card: {
+      backgroundColor: "#ffffff",
+      borderRadius: "10px",
+      padding: isMobile ? "20px" : "30px",
+      marginBottom: "30px",
+      boxShadow: "0 0 8px rgba(0,0,0,0.1)",
+    },
+    form: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "15px",
+    },
+    input: {
+      padding: "10px",
+      borderRadius: "5px",
+      border: "1px solid #ccc",
+      fontSize: "16px",
+      width: "100%",
+    },
+    textarea: {
+      padding: "10px",
+      borderRadius: "5px",
+      border: "1px solid #ccc",
+      fontSize: "16px",
+      minHeight: "80px",
+      width: "100%",
+    },
+    button: {
+      backgroundColor: "#27ae60",
+      color: "#fff",
+      padding: "12px",
+      borderRadius: "5px",
+      border: "none",
+      fontSize: "16px",
+      cursor: "pointer",
+      marginTop: "20px",
+    },
   };
 
   return (
@@ -170,57 +234,3 @@ export default function TravelAndSupplyRegistration() {
     </div>
   );
 }
-
-const styles = {
-  container: {
-    display: "flex",
-    height: "100vh",
-    fontFamily: "Arial, sans-serif",
-  },
-  main: {
-    flex: 1,
-    padding: "40px",
-    backgroundColor: "#ecf0f1",
-    overflowY: "auto",
-  },
-  title: {
-    fontSize: "26px",
-    marginBottom: "20px",
-    color: "#2c3e50",
-  },
-  card: {
-    backgroundColor: "#ffffff",
-    borderRadius: "10px",
-    padding: "30px",
-    marginBottom: "30px",
-    boxShadow: "0 0 8px rgba(0,0,0,0.1)",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-  },
-  input: {
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-    fontSize: "16px",
-  },
-  textarea: {
-    padding: "10px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-    fontSize: "16px",
-    minHeight: "80px",
-  },
-  button: {
-    backgroundColor: "#27ae60",
-    color: "#fff",
-    padding: "12px",
-    borderRadius: "5px",
-    border: "none",
-    fontSize: "16px",
-    cursor: "pointer",
-    marginTop: "20px",
-  },
-};

@@ -173,9 +173,9 @@ export default function AbastecimentosList() {
       ) : (
         <table style={styles.table}>
           <thead>
-            <tr>
+            <tr style={styles.tableTitle} >
               <th>Motorista</th>
-              <th>Caminhão</th>
+              
               <th>Data</th>
             </tr>
           </thead>
@@ -190,7 +190,7 @@ export default function AbastecimentosList() {
               abastecimentos.map((a) => (
                 <tr key={a.id} style={{ cursor: "pointer" }} onClick={() => abrirModal(a)}>
                   <td>{nomeMotorista(a.motorista)}</td>
-                  <td>{infoCaminhao(a.caminhao)}</td>
+                 
                   <td>{new Date(a.dataHora).toLocaleDateString()}</td>
                 </tr>
               ))
@@ -279,6 +279,11 @@ const styles = {
   table: {
     width: "100%",
     borderCollapse: "collapse",
+    textAlign:"left"
+  },
+    tableTitle: {
+    backgroundColor:"#4a5f7e",
+    padding:"5vw"
   },
   modalOverlay: {
     position: "fixed",
@@ -302,7 +307,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "left",
   },
   button: {
     padding: "8px 12px",

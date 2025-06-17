@@ -201,17 +201,19 @@ export default function RelatorioMedias() {
     setMediaSobreMedia(Number(mediaM.toFixed(2)));
     setResumoMotoristas(resumoArray);
   }
-function formatarDataBrasileira(dataISO) {
-  const [ano, mes, dia] = dataISO.split("-");
-  return `${dia}/${mes}/${ano}`;
-}
+  function formatarDataBrasileira(dataISO) {
+    const [ano, mes, dia] = dataISO.split("-");
+    return `${dia}/${mes}/${ano}`;
+  }
   function exportarPDFResumoMotoristas(dadosResumo) {
     const doc = new jsPDF();
- doc.text(
-  `Período: ${formatarDataBrasileira(periodoInicio)} até ${formatarDataBrasileira(periodoFim)}`,
-  14,
-  10
-);
+    doc.text(
+      `Período: ${formatarDataBrasileira(
+        periodoInicio
+      )} até ${formatarDataBrasileira(periodoFim)}`,
+      14,
+      10
+    );
     doc.text("Resumo de Médias por Motorista", 14, 15);
 
     const head = [["Motorista", "Total KM", "Total Litros", "Média km/l"]];
@@ -296,23 +298,30 @@ function formatarDataBrasileira(dataISO) {
               <table style={styles.tabela}>
                 <thead>
                   <tr>
-                    <th>Placa do Veículo</th>
-                    <th>Modelo</th>
-                    <th>Motorista</th>
-                    <th>KM Rodado</th>
-                    <th>Litros</th>
-                    <th>Média km/l</th>
+                    <th style={styles.tabelaCabecalho}>Placa do Veículo</th>
+                    <th style={styles.tabelaCabecalho}>Modelo</th>
+                    <th style={styles.tabelaCabecalho}>Motorista</th>
+                    <th style={styles.tabelaCabecalho}>KM Rodado</th>
+                    <th style={styles.tabelaCabecalho}>Litros</th>
+                    <th style={styles.tabelaCabecalho}>Média km/l</th>
                   </tr>
                 </thead>
                 <tbody>
                   {dados.map((d, i) => (
-                    <tr key={i}>
-                      <td>{d.placa}</td>
-                      <td>{d.modelo}</td>
-                      <td>{d.motoristaNome}</td>
-                      <td>{d.kmRodado}</td>
-                      <td>{d.litros.toFixed(2)}</td>
-                      <td>{d.media}</td>
+                    <tr
+                      key={i}
+                      style={
+                        i % 2 === 0
+                          ? styles.tabelaLinhaPar
+                          : styles.tabelaLinhaImpar
+                      }
+                    >
+                      <td style={styles.tabelaCelula}>{d.placa}</td>
+                      <td style={styles.tabelaCelula}>{d.modelo}</td>
+                      <td style={styles.tabelaCelula}>{d.motoristaNome}</td>
+                      <td style={styles.tabelaCelula}>{d.kmRodado}</td>
+                      <td style={styles.tabelaCelula}>{d.litros.toFixed(2)}</td>
+                      <td style={styles.tabelaCelula}>{d.media}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -440,10 +449,32 @@ const styles = {
     boxShadow: "0 0 8px rgba(0,0,0,0.1)",
     minHeight: 0, // importante para scroll funcionar em flex container
   },
+
   tabela: {
     width: "100%",
     borderCollapse: "collapse",
     marginTop: 20,
     minWidth: "700px",
+    // Removi minWidth inline, mas mantive o original
+  },
+
+  tabelaCabecalho: {
+    backgroundColor: "#2980b9", // azul escuro para o cabeçalho
+    color: "white",
+    textAlign: "left",
+    padding: "8px",
+  },
+
+  tabelaLinhaPar: {
+    backgroundColor: "#f9f9f9", // cinza bem claro
+  },
+
+  tabelaLinhaImpar: {
+    backgroundColor: "white",
+  },
+
+  tabelaCelula: {
+    padding: "8px",
+    borderBottom: "1px solid #ddd",
   },
 };

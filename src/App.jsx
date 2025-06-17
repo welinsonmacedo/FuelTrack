@@ -17,6 +17,8 @@ import Layout from "./components/Layout";
 import EditTruckRegister from "./pages/editTruckRegister/EditTruckRegister";
 import Vehicles from "./pages/vehicles/Vehicles";
 import SupplyAndTravelList from "./pages/supplyAndTravelList/supplyAndTravelList";
+import GeneralRegistration from "./pages/generalRegistration/GeneralRegistration";
+import Logout from "./components/Logout";
 
 export default function App() {
   return (
@@ -138,6 +140,26 @@ export default function App() {
           <PrivateRoute>
             <Layout>
               <SupplyAndTravelList/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+         <Route
+        path="generalRegistration" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <GeneralRegistration/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+          <Route
+        path="logout" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <Logout/>
             </Layout>
           </PrivateRoute>
         }

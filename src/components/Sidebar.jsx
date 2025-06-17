@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Sidebar.css";
 
-export default function Sidebar({ onNavigate }) {
+export default function Sidebar({  aberto, onToggle, onNavigate  }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
@@ -10,8 +10,8 @@ export default function Sidebar({ onNavigate }) {
     { label: "Veículos", path: "/vehicles" },
     { label: "Abastecimentos", path: "/supplyAndTravelList" },
     { label: "Relatórios", path: "/report" },
-    { label: "Cadastros", path: "/userregister" },
-    { label: "Configurações", path: "/" },
+    { label: "Cadastros", path: "/generalRegistration" },
+    { label: "Logout", path: "/" },
   ];
 
   function handleNavigate(path) {
@@ -23,7 +23,7 @@ export default function Sidebar({ onNavigate }) {
     <>
       <button
         className="hamburger"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onToggle}
         aria-label="Toggle menu"
       >
         <div
@@ -37,7 +37,7 @@ export default function Sidebar({ onNavigate }) {
         />
       </button>
 
-      <aside className={`sidebar ${isOpen ? "open" : ""}`}>
+      <aside className={`sidebar ${aberto ? "open" : ""}`}>
         <h2 className="logo">FuelTrackPro</h2>
         <nav className="menu">
           {menuItems.map((item) => (
