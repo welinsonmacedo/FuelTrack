@@ -54,20 +54,42 @@ export default function Suppliers() {
             <h2 style={{ marginBottom: "20px" }}>
               {fornecedorSelecionado.nomeFantasia || fornecedorSelecionado.razaoSocial}
             </h2>
+
             <div style={styles.infoRow}>
               <span style={styles.label}>Razão Social:</span>
               <span>{fornecedorSelecionado.razaoSocial}</span>
             </div>
+
+            <div style={styles.infoRow}>
+              <span style={styles.label}>Nome Fantasia:</span>
+              <span>{fornecedorSelecionado.nomeFantasia}</span>
+            </div>
+
             <div style={styles.infoRow}>
               <span style={styles.label}>CNPJ:</span>
               <span>{fornecedorSelecionado.cnpj}</span>
+            </div>
+
+            <div style={styles.infoRow}>
+              <span style={styles.label}>Endereço:</span>
+              <span>{fornecedorSelecionado.endereco}</span>
+            </div>
+
+            <div style={styles.infoRow}>
+              <span style={styles.label}>Telefone:</span>
+              <span>{fornecedorSelecionado.telefone}</span>
+            </div>
+
+            <div style={styles.infoRow}>
+              <span style={styles.label}>Tipo:</span>
+              <span>{fornecedorSelecionado.tipo}</span>
             </div>
 
             <div style={styles.modalButtons}>
               <button
                 style={styles.button}
                 onClick={() => {
-                  navigate(`supplieredit/${fornecedorSelecionado.id}`);
+                  navigate(`/editSupplier/${fornecedorSelecionado.id}`);
                   setFornecedorSelecionado(null);
                 }}
               >
@@ -181,7 +203,7 @@ const styles = {
   infoRow: {
     display: "flex",
     justifyContent: "flex-start",
-    alignItems: "left",
+    alignItems: "center",
     marginBottom: "10px",
   },
   label: {

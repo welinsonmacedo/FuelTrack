@@ -7,7 +7,9 @@ import {
   query,
   where,
   orderBy,
+  updateDoc,
 } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 import { db } from "../../services/firebase";
 
 export default function ViagensList() {
@@ -20,6 +22,8 @@ export default function ViagensList() {
   const [viagemSelecionada, setViagemSelecionada] = useState(null);
   const [filtroMotorista, setFiltroMotorista] = useState("");
   const [filtroCaminhao, setFiltroCaminhao] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchMotoristas() {
@@ -43,10 +47,8 @@ export default function ViagensList() {
       let q = collection(db, "viagens");
       const filtros = [];
 
-      if (filtroMotorista)
-        filtros.push(where("motorista", "==", filtroMotorista));
-      if (filtroCaminhao)
-        filtros.push(where("caminhao", "==", filtroCaminhao));
+      if (filtroMotorista) filtros.push(where("motorista", "==", filtroMotorista));
+      if (filtroCaminhao) filtros.push(where("caminhao", "==", filtroCaminhao));
 
       if (filtros.length > 0) q = query(q, ...filtros);
 
@@ -103,6 +105,34 @@ export default function ViagensList() {
     }
   };
 
+  // Função para remover vínculo de abastecimento com a viagem
+  const removerVinculo = async (abastecimentoId) => {
+    if (!window.confirm("Deseja realmente remover o vínculo desse abastecimento?")) {
+      return;
+    }
+
+    try {
+      const abastecimentoRef = doc(db, "abastecimentos", abastecimentoId);
+      await updateDoc(abastecimentoRef, {
+        vinculoViagem: false,
+        viagemId: "",
+      });
+
+      // Atualiza a lista local removendo o abastecimento desvinculado
+      setAbastecimentos((prev) => prev.filter((a) => a.id !== abastecimentoId));
+      alert("Vínculo removido com sucesso!");
+    } catch (error) {
+      console.error("Erro ao remover vínculo:", error);
+      alert("Erro ao remover vínculo. Tente novamente.");
+    }
+  };
+
+  const formatarData = (data) =>
+    data ? new Date(data).toLocaleDateString("pt-BR") : "-";
+
+  const formatarDataHora = (data) =>
+    data ? new Date(data).toLocaleString("pt-BR") : "-";
+
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Lista de Viagens</h1>
@@ -145,12 +175,14 @@ export default function ViagensList() {
               <th>Caminhão</th>
               <th>Data Início</th>
               <th>Data Fim</th>
+              <th>Origem</th>
+              <th>Destino</th>
             </tr>
           </thead>
           <tbody>
             {viagens.length === 0 ? (
               <tr>
-                <td colSpan="4" style={{ textAlign: "center" }}>
+                <td colSpan="6" style={{ textAlign: "center" }}>
                   Nenhuma viagem encontrada.
                 </td>
               </tr>
@@ -163,8 +195,10 @@ export default function ViagensList() {
                 >
                   <td>{nomeMotorista(v.motorista)}</td>
                   <td>{infoCaminhao(v.caminhao)}</td>
-                  <td>{v.dataInicio}</td>
-                  <td>{v.dataFim}</td>
+                  <td>{formatarData(v.dataInicio)}</td>
+                  <td>{formatarData(v.dataFim)}</td>
+                  <td>{v.origem || "-"}</td>
+                  <td>{v.destino || "-"}</td>
                 </tr>
               ))
             )}
@@ -177,13 +211,33 @@ export default function ViagensList() {
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <h2 style={{ marginBottom: 10 }}>🚚 Detalhes da Viagem</h2>
             <div style={{ marginBottom: 10 }}>
-              <p><strong>Motorista:</strong> {nomeMotorista(viagemSelecionada.motorista)}</p>
-              <p><strong>Caminhão:</strong> {infoCaminhao(viagemSelecionada.caminhao)}</p>
-              <p><strong>Data Início:</strong> {viagemSelecionada.dataInicio}</p>
-              <p><strong>Data Fim:</strong> {viagemSelecionada.dataFim}</p>
-              <p><strong>KM Inicial:</strong> {viagemSelecionada.kmInicial}</p>
-              <p><strong>KM Final:</strong> {viagemSelecionada.kmFinal}</p>
-              <p><strong>Observações:</strong> {viagemSelecionada.observacoes || "Nenhuma"}</p>
+              <p>
+                <strong>Motorista:</strong> {nomeMotorista(viagemSelecionada.motorista)}
+              </p>
+              <p>
+                <strong>Caminhão:</strong> {infoCaminhao(viagemSelecionada.caminhao)}
+              </p>
+              <p>
+                <strong>Data Início:</strong> {formatarData(viagemSelecionada.dataInicio)}
+              </p>
+              <p>
+                <strong>Data Fim:</strong> {formatarData(viagemSelecionada.dataFim)}
+              </p>
+              <p>
+                <strong>KM Inicial:</strong> {viagemSelecionada.kmInicial}
+              </p>
+              <p>
+                <strong>KM Final:</strong> {viagemSelecionada.kmFinal}
+              </p>
+              <p>
+                <strong>Origem:</strong> {viagemSelecionada.origem || "-"}
+              </p>
+              <p>
+                <strong>Destino:</strong> {viagemSelecionada.destino || "-"}
+              </p>
+              <p>
+                <strong>Observações:</strong> {viagemSelecionada.observacoes || "Nenhuma"}
+              </p>
             </div>
 
             <hr style={{ margin: "15px 0" }} />
@@ -192,7 +246,13 @@ export default function ViagensList() {
             {abastecimentos.length === 0 ? (
               <p>Nenhum abastecimento registrado para essa viagem.</p>
             ) : (
-              <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  marginTop: "10px",
+                }}
+              >
                 <thead>
                   <tr style={{ backgroundColor: "#f2f2f2" }}>
                     <th style={styles.cell}>Data/Hora</th>
@@ -201,30 +261,45 @@ export default function ViagensList() {
                     <th style={styles.cell}>Total (R$)</th>
                     <th style={styles.cell}>KM</th>
                     <th style={styles.cell}>NF</th>
+                    <th style={styles.cell}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {abastecimentos.map((a) => (
                     <tr key={a.id}>
-                      <td style={styles.cell}>{a.dataHora || "-"}</td>
+                      <td style={styles.cell}>{formatarDataHora(a.dataHora)}</td>
                       <td style={styles.cell}>{a.litros ?? "-"}</td>
                       <td style={styles.cell}>{a.precoLitro?.toFixed(2) ?? "-"}</td>
                       <td style={styles.cell}>
-                        {a.litros && a.precoLitro ? `R$ ${(a.litros * a.precoLitro).toFixed(2)}` : "-"}
+                        {a.litros && a.precoLitro
+                          ? `R$ ${(a.litros * a.precoLitro).toFixed(2)}`
+                          : "-"}
                       </td>
-                      <td style={styles.cell}>{a.kmAbastecimento ?? "-"}</td>
-                      <td style={styles.cell}>{a.notaFiscal ?? "-"}</td>
+                      <td style={styles.cell}>{a.km ?? "-"}</td>
+                      <td style={styles.cell}>{a.nf || "-"}</td>
+                      <td style={styles.cell}>
+                        <button
+                          style={styles.btnRemoveVinculo}
+                          onClick={() => removerVinculo(a.id)}
+                        >
+                          Remover vínculo
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
 
-            <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
-              <button onClick={() => alert("Editar viagem")} style={styles.button}>Editar</button>
-              <button onClick={() => apagarViagem(viagemSelecionada.id)} style={{ ...styles.button, backgroundColor: "#e74c3c" }}>Apagar</button>
-              <button onClick={fecharModal} style={styles.button}>Fechar</button>
-            </div>
+            <button style={styles.btnClose} onClick={fecharModal}>
+              Fechar
+            </button>
+            <button
+              style={{ ...styles.btnClose, marginLeft: 10, backgroundColor: "#e53935" }}
+              onClick={() => apagarViagem(viagemSelecionada.id)}
+            >
+              Apagar Viagem
+            </button>
           </div>
         </div>
       )}
@@ -234,72 +309,74 @@ export default function ViagensList() {
 
 const styles = {
   container: {
-    padding: "20px",
-    fontFamily: "Arial, sans-serif",
-    maxWidth: "900px",
-    margin: "0 auto",
+    maxWidth: 960,
+    margin: "20px auto",
+    padding: "0 20px",
   },
   title: {
-    marginBottom: "15px",
-    color: "#2c3e50",
-    fontSize: "20px",
+    fontSize: 24,
+    marginBottom: 20,
   },
   filters: {
     display: "flex",
-    gap: "10px",
-    marginBottom: "15px",
-    flexWrap: "wrap",
+    gap: 15,
+    marginBottom: 20,
   },
   select: {
-    flex: "1 1 150px",
-    padding: "8px",
-    fontSize: "16px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
+    flex: 1,
+    padding: 8,
+    fontSize: 16,
   },
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    textAlign: "left",
   },
   tableTitle: {
-    backgroundColor: "#4a5f7e",
+    backgroundColor: "#1976d2",
     color: "white",
+  },
+  cell: {
+    border: "1px solid #ccc",
+    padding: 8,
+    textAlign: "center",
   },
   modalOverlay: {
     position: "fixed",
     top: 0,
     left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0,0,0,0.4)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 1000,
+    zIndex: 9999,
   },
   modalContent: {
-    backgroundColor: "#fff",
+    backgroundColor: "white",
     padding: 20,
-    borderRadius: 8,
-    minWidth: 300,
-    maxWidth: 600,
+    borderRadius: 6,
+    maxWidth: 700,
+    width: "90%",
     maxHeight: "90vh",
     overflowY: "auto",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.26)",
   },
-  button: {
-    padding: "8px 12px",
-    borderRadius: 5,
-    border: "none",
+  btnClose: {
+    padding: "8px 16px",
+    fontSize: 16,
     cursor: "pointer",
-    backgroundColor: "#3498db",
+    borderRadius: 4,
+    border: "none",
+    backgroundColor: "#1976d2",
     color: "white",
   },
-  cell: {
-    border: "1px solid #ccc",
-    padding: "6px 8px",
-    textAlign: "center",
-    fontSize: "14px",
+  btnRemoveVinculo: {
+    padding: "4px 8px",
+    fontSize: 14,
+    cursor: "pointer",
+    borderRadius: 4,
+    border: "none",
+    backgroundColor: "#f44336",
+    color: "white",
   },
 };

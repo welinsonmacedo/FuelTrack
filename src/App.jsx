@@ -22,6 +22,12 @@ import Logout from "./components/Logout";
 import SupplierRegister from "./pages/supplierRegister/SupplierRegister";
 import Suppliers from "./pages/suppliersList/Suppliers";
 import TripsList from "./pages/trips/TripsList";
+import TravelRegistration from "./pages/travelRegistration/TravelRegistration";
+import SupplyRegistration from "./pages/supplyRegistration/SupplyRegistration";
+import LinkRefuelingTravel from "./pages/linkRefuelingTravel/LinkRefuelingTravel";
+import EditFuelRegister from "./pages/editFuelRegister/EditFuelRegister";
+import EditTravelRegister from "./pages/editTravelRegister/EditTravelRegister";
+import EditSupplier from "./pages/editSupplier/EditSupplier";
 
 export default function App() {
   return (
@@ -207,7 +213,67 @@ export default function App() {
           </PrivateRoute>
         }
         />
-     
+          <Route
+        path="/travelRegistration" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <TravelRegistration/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+         <Route
+        path="/supplyRegistration" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <SupplyRegistration/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+         <Route
+        path="/linkRefuelingTravel" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <LinkRefuelingTravel/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+          <Route
+        path="/editFuelRegister/:id" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <EditFuelRegister/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+           <Route
+        path="/editTravelRegister/:id" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <EditTravelRegister/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+            <Route
+        path="/editSupplier/:id" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <EditSupplier/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+
     </Routes>
   );
 }

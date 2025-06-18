@@ -1,17 +1,13 @@
-import React, { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
+import { useParams, useNavigate } from "react-router-dom";
 import { formatCNPJ, validarCNPJ } from "../../components/CNPJInput";
 
-const TIPOS_FORNECEDOR = [
-  "Abastecimento",
-  "Manutenção",
-  "Prestador de Serviço",
-  "Venda de Peças",
-  "Outro",
-];
+export default function EditSupplier() {
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-export default function SupplierRegister() {
   const [razaoSocial, setRazaoSocial] = useState("");
   const [nomeFantasia, setNomeFantasia] = useState("");
   const [cnpj, setCnpj] = useState("");
@@ -21,28 +17,52 @@ export default function SupplierRegister() {
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
 
+  useEffect(() => {
+    async function fetchFornecedor() {
+      try {
+        const docRef = doc(db, "fornecedores", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setRazaoSocial(data.razaoSocial || "");
+          setNomeFantasia(data.nomeFantasia || "");
+          setCnpj(data.cnpj || "");
+          setEndereco(data.endereco || "");
+          setTelefone(data.telefone || "");
+          setTipo(data.tipo || "");
+        } else {
+          setErro("Fornecedor não encontrado");
+        }
+      } catch (error) {
+        setErro("Erro ao buscar fornecedor: " + error.message);
+      }
+    }
+    fetchFornecedor();
+  }, [id]);
+
+  const handleCNPJChange = (e) => {
+    const valorFormatado = formatCNPJ(e.target.value);
+    setCnpj(valorFormatado);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErro("");
     setSucesso("");
 
-    if (
-      !razaoSocial ||
-      !nomeFantasia ||
-      !cnpj ||
-      !endereco ||
-      !telefone ||
-      !tipo
-    ) {
-      return setErro("Todos os campos são obrigatórios.");
+    if (!razaoSocial || !nomeFantasia || !cnpj || !endereco || !telefone || !tipo) {
+      setErro("Todos os campos são obrigatórios.");
+      return;
     }
 
     if (!validarCNPJ(cnpj)) {
-      return setErro("CNPJ inválido.");
+      setErro("CNPJ inválido.");
+      return;
     }
 
     try {
-      await addDoc(collection(db, "fornecedores"), {
+      const docRef = doc(db, "fornecedores", id);
+      await updateDoc(docRef, {
         razaoSocial,
         nomeFantasia,
         cnpj,
@@ -50,30 +70,18 @@ export default function SupplierRegister() {
         telefone,
         tipo,
       });
-      setSucesso("Fornecedor cadastrado com sucesso!");
-      // Resetar campos
-      setRazaoSocial("");
-      setNomeFantasia("");
-      setCnpj("");
-      setEndereco("");
-      setTelefone("");
-      setTipo("");
+      setSucesso("Fornecedor atualizado com sucesso!");
+      // Opcional: navegar de volta para lista ou detalhe
+      setTimeout(() => navigate("/suppliers"), 1500);
     } catch (error) {
-      setErro("Erro ao cadastrar: " + error.message);
+      setErro("Erro ao atualizar: " + error.message);
     }
-  };
-
-  const handleCNPJChange = (e) => {
-    const valorFormatado = formatCNPJ(e.target.value);
-    setCnpj(valorFormatado);
   };
 
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
-          Cadastro de Fornecedor
-        </h2>
+        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Editar Fornecedor</h2>
         <form onSubmit={handleSubmit} style={styles.form}>
           <div>
             <label>Razão Social:</label>
@@ -126,11 +134,10 @@ export default function SupplierRegister() {
           <div>
             <label>Telefone:</label>
             <input
-              type="tel"
+              type="text"
               value={telefone}
               onChange={(e) => setTelefone(e.target.value)}
               required
-              placeholder="(00) 00000-0000"
               style={styles.input}
             />
           </div>
@@ -144,16 +151,15 @@ export default function SupplierRegister() {
               style={styles.input}
             >
               <option value="">Selecione o tipo</option>
-              {TIPOS_FORNECEDOR.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
+              <option value="Abastecimento">Abastecimento</option>
+              <option value="Manutenção">Manutenção</option>
+              <option value="Prestador de Serviço">Prestador de Serviço</option>
+              <option value="Venda de Peças">Venda de Peças</option>
             </select>
           </div>
 
           <button type="submit" style={styles.button}>
-            Cadastrar
+            Salvar Alterações
           </button>
         </form>
 
@@ -195,7 +201,7 @@ const styles = {
   },
   button: {
     padding: "12px",
-    backgroundColor: "#2ecc71",
+    backgroundColor: "#2980b9",
     color: "#fff",
     fontSize: "16px",
     border: "none",

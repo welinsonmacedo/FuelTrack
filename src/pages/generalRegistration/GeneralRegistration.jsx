@@ -12,6 +12,16 @@ export default function GeneralRegistration() {
     <div style={styles.container}>
       <h1 style={styles.titulo}>Central de Cadastros</h1>
       <div style={styles.botoes}>
+        
+         <button style={styles.botao} onClick={() => navegarPara("/travelRegistration")}>
+          Cadastro de Viagens
+        </button>
+        <button style={styles.botao} onClick={() => navegarPara("/supplyRegistration")}>
+          Cadastro de Abastecimentos
+        </button>
+        <button style={styles.botao} onClick={() => navegarPara("/linkRefuelingTravel")}>
+          Vincular Abastecimentos
+        </button>
         <button style={styles.botao} onClick={() => navegarPara("/drivers/driverregister")}>
           Cadastro de Motoristas
         </button>

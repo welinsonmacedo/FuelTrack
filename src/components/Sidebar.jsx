@@ -20,7 +20,7 @@ export default function Sidebar({ aberto, onToggle, onNavigate }) {
   }, []);
 
   const menuItems = [
-    { label: "Lançar", path: "/register" },
+   
     { label: "Motoristas", path: "/drivers" },
     { label: "Veículos", path: "/vehicles" },
     { label: "Abastecimentos", path: "/supplyAndTravelList" },

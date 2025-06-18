@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { db } from "../../services/firebase";
 import {
   collection,
@@ -24,6 +25,8 @@ export default function AbastecimentosList() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedAbastecimento, setSelectedAbastecimento] = useState(null);
+
+  const navigate = useNavigate(); // ← importante!
 
   useEffect(() => {
     async function fetchMotoristas() {
@@ -89,14 +92,12 @@ export default function AbastecimentosList() {
     caminhoes,
   ]);
 
- const nomeMotorista = (id) => {
-  const m = motoristas.find((m) => m.id === id);
-  console.log("Verificando motorista:", id, "=>", m ? m.nome : "Não encontrado");
-  return m ? m.nome : id;
-};
+  const nomeMotorista = (id) => {
+    const m = motoristas.find((m) => m.id === id);
+    return m ? m.nome : id;
+  };
 
   const infoCaminhao = (id) => {
-    if (!id || !caminhoes.length) return id;
     const c = caminhoes.find((c) => c.id === id);
     return c ? `${c.placa} - ${c.modelo}` : id;
   };
@@ -155,43 +156,41 @@ export default function AbastecimentosList() {
           value={filtroDataInicio}
           onChange={(e) => setFiltroDataInicio(e.target.value)}
           style={styles.inputDate}
-          placeholder="Data Início"
         />
         <input
           type="date"
           value={filtroDataFim}
           onChange={(e) => setFiltroDataFim(e.target.value)}
           style={styles.inputDate}
-          placeholder="Data Fim"
         />
       </section>
 
-      {motoristas.length === 0 || caminhoes.length === 0 ? (
-        <p>Carregando motoristas e caminhões...</p>
-      ) : loading ? (
+      {loading ? (
         <p>Carregando abastecimentos...</p>
       ) : (
         <table style={styles.table}>
           <thead>
-            <tr style={styles.tableTitle} >
+            <tr style={styles.tableTitle}>
               <th>Motorista</th>
-              
               <th>Data</th>
             </tr>
           </thead>
           <tbody>
             {abastecimentos.length === 0 ? (
               <tr>
-                <td colSpan="3" style={{ textAlign: "center" }}>
+                <td colSpan="2" style={{ textAlign: "center" }}>
                   Nenhum registro encontrado.
                 </td>
               </tr>
             ) : (
               abastecimentos.map((a) => (
-                <tr key={a.id} style={{ cursor: "pointer" }} onClick={() => abrirModal(a)}>
+                <tr
+                  key={a.id}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => abrirModal(a)}
+                >
                   <td>{nomeMotorista(a.motorista)}</td>
-                 
-                  <td>{new Date(a.dataHora).toLocaleDateString()}</td>
+                  <td>{new Date(a.dataHora).toLocaleDateString("pt-BR")}</td>
                 </tr>
               ))
             )}
@@ -204,14 +203,16 @@ export default function AbastecimentosList() {
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <h2>Detalhes do Abastecimento</h2>
             <p>
-              <strong>Motorista:</strong> {nomeMotorista(selectedAbastecimento.motorista)}
+              <strong>Motorista:</strong>{" "}
+              {nomeMotorista(selectedAbastecimento.motorista)}
             </p>
             <p>
-              <strong>Caminhão:</strong> {infoCaminhao(selectedAbastecimento.caminhao)}
+              <strong>Caminhão:</strong>{" "}
+              {infoCaminhao(selectedAbastecimento.caminhao)}
             </p>
             <p>
               <strong>Data e Hora:</strong>{" "}
-              {new Date(selectedAbastecimento.dataHora).toLocaleString()}
+              {new Date(selectedAbastecimento.dataHora).toLocaleString("pt-BR")}
             </p>
             <p>
               <strong>KM:</strong> {selectedAbastecimento.kmAbastecimento}
@@ -220,11 +221,15 @@ export default function AbastecimentosList() {
               <strong>Litros:</strong> {selectedAbastecimento.litros}
             </p>
             <p>
-              <strong>Preço por Litro:</strong> R$ {Number(selectedAbastecimento.precoLitro).toFixed(2)}
+              <strong>Preço por Litro:</strong> R${" "}
+              {Number(selectedAbastecimento.precoLitro).toFixed(2)}
             </p>
 
             <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
-              <button onClick={() => alert("Implementar edição aqui")} style={styles.button}>
+              <button
+                onClick={() => navigate(`/editFuelRegister/${selectedAbastecimento.id}`)}
+                style={styles.button}
+              >
                 Editar
               </button>
               <button
@@ -279,11 +284,11 @@ const styles = {
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    textAlign:"left"
+    textAlign: "left",
   },
-    tableTitle: {
-    backgroundColor:"#4a5f7e",
-    padding:"5vw"
+  tableTitle: {
+    backgroundColor: "#4a5f7e",
+    color: "#fff",
   },
   modalOverlay: {
     position: "fixed",
@@ -306,8 +311,6 @@ const styles = {
     boxShadow: "0 2px 8px rgba(0,0,0,0.26)",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "left",
   },
   button: {
     padding: "8px 12px",
