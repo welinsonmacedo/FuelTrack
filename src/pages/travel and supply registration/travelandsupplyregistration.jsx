@@ -72,7 +72,7 @@ export default function TravelAndSupplyRegistration() {
         return;
       }
 
-      const caminhaoSelecionado = caminhoes.find(c => c.id === caminhao);
+      const caminhaoSelecionado = caminhoes.find((c) => c.id === caminhao);
       if (caminhaoSelecionado) {
         setCapacidadeTanque(caminhaoSelecionado.capacidadeTanque || 0);
       }
@@ -100,18 +100,33 @@ export default function TravelAndSupplyRegistration() {
   const salvarTudo = async (e) => {
     e.preventDefault();
 
-    if (!motorista || !caminhao || !kmInicial || !kmFinal || !dataInicio || !dataFim || !litros || !precoLitro || !fornecedor || !nf) {
+    if (
+      !motorista ||
+      !caminhao ||
+      !kmInicial ||
+      !kmFinal ||
+      !dataInicio ||
+      !dataFim ||
+      !litros ||
+      !precoLitro ||
+      !fornecedor ||
+      !nf
+    ) {
       alert("Preencha todos os campos obrigatórios.");
       return;
     }
 
     if (Number(kmInicial) < Number(kmMaxAnterior)) {
-      alert(`O KM inicial (${kmInicial}) não pode ser menor que o último registrado (${kmMaxAnterior})`);
+      alert(
+        `O KM inicial (${kmInicial}) não pode ser menor que o último registrado (${kmMaxAnterior})`
+      );
       return;
     }
 
     if (Number(litros) > Number(capacidadeTanque)) {
-      alert(`A quantidade abastecida (${litros} L) não pode exceder a capacidade do tanque (${capacidadeTanque} L).`);
+      alert(
+        `A quantidade abastecida (${litros} L) não pode exceder a capacidade do tanque (${capacidadeTanque} L).`
+      );
       return;
     }
 
@@ -126,37 +141,45 @@ export default function TravelAndSupplyRegistration() {
       criadoEm: new Date(),
     };
 
-    const abastecimento = {
-      caminhao,
-      motorista,
-      dataHora: dataFim,
-      kmAbastecimento: Number(kmFinal),
-      litros: Number(litros),
-      precoLitro: Number(precoLitro),
-      fornecedor,
-      notaFiscal: nf,
-      dataLancamento,
-      vinculoViagem: true,
-      criadoEm: new Date(),
-    };
+    try {
+      // Salva a viagem e pega o id
+      const viagemDocRef = await addDoc(collection(db, "viagens"), viagem);
 
-    await addDoc(collection(db, "viagens"), viagem);
-    await addDoc(collection(db, "abastecimentos"), abastecimento);
+      const abastecimento = {
+        caminhao,
+        motorista,
+        dataHora: dataFim,
+        kmAbastecimento: Number(kmFinal),
+        litros: Number(litros),
+        precoLitro: Number(precoLitro),
+        fornecedor,
+        notaFiscal: nf,
+        dataLancamento,
+        vinculoViagem: true,
+        viagemId: viagemDocRef.id, // ID da viagem salva
+        criadoEm: new Date(),
+      };
 
-    alert("Viagem e abastecimento salvos com sucesso!");
+      await addDoc(collection(db, "abastecimentos"), abastecimento);
 
-    setMotorista("");
-    setCaminhao("");
-    setKmInicial("");
-    setKmFinal("");
-    setDataInicio("");
-    setDataFim("");
-    setObs("");
-    setLitros("");
-    setPrecoLitro("");
-    setFornecedor("");
-    setNf("");
-    setDataLancamento(new Date().toISOString().slice(0, 10));
+      alert("Viagem e abastecimento salvos com sucesso!");
+
+      setMotorista("");
+      setCaminhao("");
+      setKmInicial("");
+      setKmFinal("");
+      setDataInicio("");
+      setDataFim("");
+      setObs("");
+      setLitros("");
+      setPrecoLitro("");
+      setFornecedor("");
+      setNf("");
+      setDataLancamento(new Date().toISOString().slice(0, 10));
+    } catch (error) {
+      console.error("Erro ao salvar:", error);
+      alert("Erro ao salvar os dados. Tente novamente.");
+    }
   };
 
   const styles = {
@@ -171,7 +194,7 @@ export default function TravelAndSupplyRegistration() {
       padding: isMobile ? "20px" : "40px",
       backgroundColor: "#ecf0f1",
       overflowY: "auto",
-      width:"200px"
+      width: "200px",
     },
     title: {
       fontSize: isMobile ? "20px" : "26px",
@@ -226,42 +249,116 @@ export default function TravelAndSupplyRegistration() {
         <section style={styles.card}>
           <form onSubmit={salvarTudo} style={styles.form}>
             <h2>Informações Gerais</h2>
-            <select value={motorista} onChange={(e) => setMotorista(e.target.value)} style={styles.input}>
+            <select
+              value={motorista}
+              onChange={(e) => setMotorista(e.target.value)}
+              style={styles.input}
+            >
               <option value="">Selecionar Motorista</option>
               {motoristas.map((m) => (
-                <option key={m.id} value={m.id}>{m.nome}</option>
+                <option key={m.id} value={m.id}>
+                  {m.nome}
+                </option>
               ))}
             </select>
 
-            <select value={caminhao} onChange={(e) => setCaminhao(e.target.value)} style={styles.input}>
+            <select
+              value={caminhao}
+              onChange={(e) => setCaminhao(e.target.value)}
+              style={styles.input}
+            >
               <option value="">Selecionar Caminhão</option>
               {caminhoes.map((c) => (
-                <option key={c.id} value={c.id}>{c.placa} - {c.modelo}</option>
+                <option key={c.id} value={c.id}>
+                  {c.placa} - {c.modelo}
+                </option>
               ))}
             </select>
 
             <h2>Dados da Viagem</h2>
-            <input placeholder="KM Inicial" type="number" value={kmInicial} onChange={(e) => setKmInicial(e.target.value)} style={styles.input} />
-            <input placeholder="KM Final" type="number" value={kmFinal} onChange={(e) => setKmFinal(e.target.value)} style={styles.input} />
-            <input placeholder="Data Início" type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} style={styles.input} />
-            <input placeholder="Data Fim (e hora do abastecimento)" type="datetime-local" value={dataFim} onChange={(e) => setDataFim(e.target.value)} style={styles.input} />
-            <textarea placeholder="Observações" value={obs} onChange={(e) => setObs(e.target.value)} style={styles.textarea} />
+            <input
+              placeholder="KM Inicial"
+              type="number"
+              value={kmInicial}
+              onChange={(e) => setKmInicial(e.target.value)}
+              style={styles.input}
+            />
+            <input
+              placeholder="KM Final"
+              type="number"
+              value={kmFinal}
+              onChange={(e) => setKmFinal(e.target.value)}
+              style={styles.input}
+            />
+            <input
+              placeholder="Data Início"
+              type="date"
+              value={dataInicio}
+              onChange={(e) => setDataInicio(e.target.value)}
+              style={styles.input}
+            />
+            <input
+              placeholder="Data Fim (e hora do abastecimento)"
+              type="datetime-local"
+              value={dataFim}
+              onChange={(e) => setDataFim(e.target.value)}
+              style={styles.input}
+            />
+            <textarea
+              placeholder="Observações"
+              value={obs}
+              onChange={(e) => setObs(e.target.value)}
+              style={styles.textarea}
+            />
 
             <h2>Dados do Abastecimento ⛽</h2>
-            <input placeholder="Litros Abastecidos" type="number" value={litros} onChange={(e) => setLitros(e.target.value)} style={styles.input} />
-            <input placeholder="Preço por Litro" type="number" step="0.01" value={precoLitro} onChange={(e) => setPrecoLitro(e.target.value)} style={styles.input} />
-            
-            <select value={fornecedor} onChange={(e) => setFornecedor(e.target.value)} style={styles.input}>
+            <input
+              placeholder="Litros Abastecidos"
+              type="number"
+              value={litros}
+              onChange={(e) => setLitros(e.target.value)}
+              style={styles.input}
+            />
+            <input
+              placeholder="Preço por Litro"
+              type="number"
+              step="0.01"
+              value={precoLitro}
+              onChange={(e) => setPrecoLitro(e.target.value)}
+              style={styles.input}
+            />
+
+            <select
+              value={fornecedor}
+              onChange={(e) => setFornecedor(e.target.value)}
+              style={styles.input}
+            >
               <option value="">Selecionar Fornecedor</option>
               {fornecedores.map((f) => (
-                <option key={f.id} value={f.id}>{f.razaoSocial}</option>
+                <option key={f.id} value={f.id}>
+                  {f.razaoSocial}
+                </option>
               ))}
             </select>
 
-            <input placeholder="Número da Nota Fiscal" type="text" value={nf} onChange={(e) => setNf(e.target.value)} style={styles.input} />
-            <input type="date" value={dataLancamento} onChange={(e) => setDataLancamento(e.target.value)} style={styles.input} disabled />
+            <input
+              placeholder="Número da Nota Fiscal"
+              type="text"
+              value={nf}
+              onChange={(e) => setNf(e.target.value)}
+              style={styles.input}
+            />
+            <input
+              type="date"
+              value={dataLancamento}
+              onChange={(e) => setDataLancamento(e.target.value)}
+              style={styles.input}
+              disabled
+            />
 
-            <button type="submit" style={styles.button}>Salvar Tudo</button>
+            <button type="submit" style={styles.button}>
+              Salvar Tudo
+            </button>
           </form>
         </section>
       </main>

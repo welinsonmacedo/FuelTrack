@@ -24,6 +24,7 @@ export default function Sidebar({ aberto, onToggle, onNavigate }) {
     { label: "Motoristas", path: "/drivers" },
     { label: "Veículos", path: "/vehicles" },
     { label: "Abastecimentos", path: "/supplyAndTravelList" },
+    { label: "Viagens", path: "/tripsList" },
     { label: "Relatórios", path: "/report" },
     { label: "Fornecedores", path: "/suppliersList" },
     { label: "Cadastros", path: "/generalRegistration" },

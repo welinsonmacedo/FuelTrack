@@ -21,6 +21,7 @@ import GeneralRegistration from "./pages/generalRegistration/GeneralRegistration
 import Logout from "./components/Logout";
 import SupplierRegister from "./pages/supplierRegister/SupplierRegister";
 import Suppliers from "./pages/suppliersList/Suppliers";
+import TripsList from "./pages/trips/TripsList";
 
 export default function App() {
   return (
@@ -176,6 +177,16 @@ export default function App() {
           </PrivateRoute>
         }
         />
+           <Route
+        path="supplierRegister" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <SupplierRegister/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
           <Route
         path="/suppliersList" element=
         {
@@ -186,7 +197,17 @@ export default function App() {
           </PrivateRoute>
         }
         />
-      
+           <Route
+        path="/tripsList" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <TripsList/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+     
     </Routes>
   );
 }
