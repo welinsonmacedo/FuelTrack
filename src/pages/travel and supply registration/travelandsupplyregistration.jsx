@@ -20,9 +20,13 @@ export default function TravelAndSupplyRegistration() {
   const [obs, setObs] = useState("");
   const [litros, setLitros] = useState("");
   const [precoLitro, setPrecoLitro] = useState("");
+  const [fornecedor, setFornecedor] = useState("");
+  const [nf, setNf] = useState("");
+  const [dataLancamento, setDataLancamento] = useState("");
 
   const [motoristas, setMotoristas] = useState([]);
   const [caminhoes, setCaminhoes] = useState([]);
+  const [fornecedores, setFornecedores] = useState([]);
   const [kmMaxAnterior, setKmMaxAnterior] = useState(null);
   const [capacidadeTanque, setCapacidadeTanque] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
@@ -49,6 +53,15 @@ export default function TravelAndSupplyRegistration() {
       setCaminhoes(lista);
     };
     buscarCaminhoes();
+  }, []);
+
+  useEffect(() => {
+    const buscarFornecedores = async () => {
+      const snap = await getDocs(collection(db, "fornecedores"));
+      const lista = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setFornecedores(lista);
+    };
+    buscarFornecedores();
   }, []);
 
   useEffect(() => {
@@ -80,10 +93,14 @@ export default function TravelAndSupplyRegistration() {
     buscarUltimoKM();
   }, [caminhao, caminhoes]);
 
+  useEffect(() => {
+    setDataLancamento(new Date().toISOString().slice(0, 10)); // yyyy-mm-dd
+  }, []);
+
   const salvarTudo = async (e) => {
     e.preventDefault();
 
-    if (!motorista || !caminhao || !kmInicial || !kmFinal || !dataInicio || !dataFim || !litros || !precoLitro) {
+    if (!motorista || !caminhao || !kmInicial || !kmFinal || !dataInicio || !dataFim || !litros || !precoLitro || !fornecedor || !nf) {
       alert("Preencha todos os campos obrigatórios.");
       return;
     }
@@ -116,6 +133,9 @@ export default function TravelAndSupplyRegistration() {
       kmAbastecimento: Number(kmFinal),
       litros: Number(litros),
       precoLitro: Number(precoLitro),
+      fornecedor,
+      notaFiscal: nf,
+      dataLancamento,
       vinculoViagem: true,
       criadoEm: new Date(),
     };
@@ -134,6 +154,9 @@ export default function TravelAndSupplyRegistration() {
     setObs("");
     setLitros("");
     setPrecoLitro("");
+    setFornecedor("");
+    setNf("");
+    setDataLancamento(new Date().toISOString().slice(0, 10));
   };
 
   const styles = {
@@ -148,6 +171,7 @@ export default function TravelAndSupplyRegistration() {
       padding: isMobile ? "20px" : "40px",
       backgroundColor: "#ecf0f1",
       overflowY: "auto",
+      width:"200px"
     },
     title: {
       fontSize: isMobile ? "20px" : "26px",
@@ -191,6 +215,7 @@ export default function TravelAndSupplyRegistration() {
       fontSize: "16px",
       cursor: "pointer",
       marginTop: "20px",
+      width: "92%",
     },
   };
 
@@ -198,7 +223,6 @@ export default function TravelAndSupplyRegistration() {
     <div style={styles.container}>
       <main style={styles.main}>
         <h1 style={styles.title}>Cadastro de Viagem + Abastecimento</h1>
-
         <section style={styles.card}>
           <form onSubmit={salvarTudo} style={styles.form}>
             <h2>Informações Gerais</h2>
@@ -226,6 +250,16 @@ export default function TravelAndSupplyRegistration() {
             <h2>Dados do Abastecimento ⛽</h2>
             <input placeholder="Litros Abastecidos" type="number" value={litros} onChange={(e) => setLitros(e.target.value)} style={styles.input} />
             <input placeholder="Preço por Litro" type="number" step="0.01" value={precoLitro} onChange={(e) => setPrecoLitro(e.target.value)} style={styles.input} />
+            
+            <select value={fornecedor} onChange={(e) => setFornecedor(e.target.value)} style={styles.input}>
+              <option value="">Selecionar Fornecedor</option>
+              {fornecedores.map((f) => (
+                <option key={f.id} value={f.id}>{f.razaoSocial}</option>
+              ))}
+            </select>
+
+            <input placeholder="Número da Nota Fiscal" type="text" value={nf} onChange={(e) => setNf(e.target.value)} style={styles.input} />
+            <input type="date" value={dataLancamento} onChange={(e) => setDataLancamento(e.target.value)} style={styles.input} disabled />
 
             <button type="submit" style={styles.button}>Salvar Tudo</button>
           </form>

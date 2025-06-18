@@ -25,6 +25,7 @@ export default function Sidebar({ aberto, onToggle, onNavigate }) {
     { label: "Veículos", path: "/vehicles" },
     { label: "Abastecimentos", path: "/supplyAndTravelList" },
     { label: "Relatórios", path: "/report" },
+    { label: "Fornecedores", path: "/suppliersList" },
     { label: "Cadastros", path: "/generalRegistration" },
     { label: "Logout", path: "/logout" }, // Corrigido path
   ];

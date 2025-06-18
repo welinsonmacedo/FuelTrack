@@ -19,6 +19,8 @@ import Vehicles from "./pages/vehicles/Vehicles";
 import SupplyAndTravelList from "./pages/supplyAndTravelList/supplyAndTravelList";
 import GeneralRegistration from "./pages/generalRegistration/GeneralRegistration";
 import Logout from "./components/Logout";
+import SupplierRegister from "./pages/supplierRegister/SupplierRegister";
+import Suppliers from "./pages/suppliersList/Suppliers";
 
 export default function App() {
   return (
@@ -160,6 +162,26 @@ export default function App() {
           <PrivateRoute>
             <Layout>
               <Logout/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+          <Route
+        path="suppliersList/supplierRegister" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <SupplierRegister/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+          <Route
+        path="/suppliersList" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <Suppliers/>
             </Layout>
           </PrivateRoute>
         }

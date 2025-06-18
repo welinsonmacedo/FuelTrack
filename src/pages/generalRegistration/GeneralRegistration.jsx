@@ -21,6 +21,9 @@ export default function GeneralRegistration() {
         <button style={styles.botao} onClick={() => navegarPara("/userregister")}>
           Cadastro de Usuários
         </button>
+        <button style={styles.botao} onClick={() => navegarPara("/supplierRegister")}>
+          Cadastro de Fornecedores
+        </button>
       </div>
     </div>
   );
