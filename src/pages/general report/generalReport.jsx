@@ -1035,6 +1035,7 @@ const styles = {
     padding: "8px",
     borderRadius: "4px",
     border: "1px solid #ccc",
+    with:"200px"
   },
   select: {
     padding: "8px",

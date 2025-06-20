@@ -29,6 +29,10 @@ import EditFuelRegister from "./pages/editFuelRegister/EditFuelRegister";
 import EditTravelRegister from "./pages/editTravelRegister/EditTravelRegister";
 import EditSupplier from "./pages/editSupplier/EditSupplier";
 import RouteRegistration from "./pages/routeRegistration/RouteRegistration";
+import OdometroPage from "./pages/odometerPage/OdometerPage";
+import TypesMaintenancePage from "./pages/typesMaintenancePage/TypesMaintenancePage";
+import MaintenancePage from "./pages/maintenancePage/MaintenancePage";
+import AlertsMaintenancePage from "./pages/alertsMaintenancePage/AlertsMaintenancePage";
 
 export default function App() {
   return (
@@ -284,7 +288,50 @@ export default function App() {
           </PrivateRoute>
         }
         />
+             <Route
+        path="/odometerpage" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <OdometroPage/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
 
+              <Route
+        path="/typesmaintenance" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <TypesMaintenancePage/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+
+
+       <Route
+        path="/maintenance" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <MaintenancePage/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+
+        <Route
+        path="/alertsmaintenance" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <AlertsMaintenancePage/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
     </Routes>
   );
 }

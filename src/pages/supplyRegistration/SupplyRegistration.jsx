@@ -26,48 +26,57 @@ export default function SupplyRegistration() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      // Buscar motoristas
-      const motoristasSnap = await getDocs(collection(db, "motoristas"));
-      setMotoristas(
-        motoristasSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+ useEffect(() => {
+  const fetchData = async () => {
+    // Motoristas
+    const motoristasSnap = await getDocs(collection(db, "motoristas"));
+    const motoristasData = motoristasSnap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setMotoristas(motoristasData);
+
+    // Caminhões
+    const caminhoesSnap = await getDocs(collection(db, "veiculos"));
+    const caminhoesData = caminhoesSnap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setCaminhoes(caminhoesData);
+
+    // Fornecedores
+    const fornecedoresSnap = await getDocs(collection(db, "fornecedores"));
+    setFornecedores(
+      fornecedoresSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    );
+
+    // Viagens com placa e motorista nome
+    const viagensSnap = await getDocs(collection(db, "viagens"));
+    const viagensComPlacaEMotorista = viagensSnap.docs.map((doc) => {
+      const viagemData = doc.data();
+
+      const caminhaoRelacionado = caminhoesData.find(
+        (c) => c.id === viagemData.caminhao
       );
 
-      // Buscar caminhões
-      const caminhoesSnap = await getDocs(collection(db, "veiculos"));
-      const caminhoesData = caminhoesSnap.docs.map((doc) => ({
+      const motoristaRelacionado = motoristasData.find(
+        (m) => m.id === viagemData.motorista
+      );
+
+      return {
         id: doc.id,
-        ...doc.data(),
-      }));
-      setCaminhoes(caminhoesData);
+        ...viagemData,
+        placa: caminhaoRelacionado?.placa || "Placa não encontrada",
+        nomeMotorista: motoristaRelacionado?.nome || "Motorista não encontrado",
+      };
+    });
 
-      // Buscar fornecedores
-      const fornecedoresSnap = await getDocs(collection(db, "fornecedores"));
-      setFornecedores(
-        fornecedoresSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-      );
+    setViagens(viagensComPlacaEMotorista);
+  };
 
-      // Buscar viagens e cruzar com placas
-      const viagensSnap = await getDocs(collection(db, "viagens"));
-      const viagensComPlaca = viagensSnap.docs.map((doc) => {
-        const viagemData = doc.data();
-        const caminhaoRelacionado = caminhoesData.find(
-          (c) => c.id === viagemData.caminhao
-        );
+  fetchData();
+}, []);
 
-        return {
-          id: doc.id,
-          ...viagemData,
-          placa: caminhaoRelacionado?.placa || "Placa não encontrada",
-        };
-      });
-
-      setViagens(viagensComPlaca);
-    };
-
-    fetchData();
-  }, []);
 
   const salvarAbastecimento = async (e) => {
     e.preventDefault();
@@ -96,7 +105,7 @@ export default function SupplyRegistration() {
       fornecedor,
       notaFiscal: nf,
       viagemId: viagemId || null,
-      vinculoViagem: viagemId ? true : false,  // <-- Aqui está o campo novo
+      vinculoViagem: viagemId ? true : false, // <-- Aqui está o campo novo
       criadoEm: new Date(),
     };
 
@@ -120,10 +129,18 @@ export default function SupplyRegistration() {
     }
   };
 
-  const formatarDataBR = (dataISO) => {
-    if (!dataISO) return "";
-    const data = new Date(dataISO);
-    return data.toLocaleDateString("pt-BR");
+  const formatarDataBR = (data) => {
+    if (!data) return "";
+
+    // Se for Timestamp do Firestore, converte para Date nativo
+    if (data.toDate && typeof data.toDate === "function") {
+      data = data.toDate();
+    }
+
+    const dataObj = new Date(data);
+    if (isNaN(dataObj.getTime())) return "";
+
+    return dataObj.toLocaleDateString("pt-BR");
   };
 
   const styles = {
@@ -264,17 +281,18 @@ export default function SupplyRegistration() {
             />
 
             <select
-              value={viagemId}
-              onChange={(e) => setViagemId(e.target.value)}
-              style={styles.input}
-            >
-              <option value="">(Opcional) Vincular a Viagem</option>
-              {viagens.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.placa} - {formatarDataBR(v.dataInicio)}
-                </option>
-              ))}
-            </select>
+  value={viagemId}
+  onChange={(e) => setViagemId(e.target.value)}
+  style={styles.input}
+>
+  <option value="">Ainda Sem Vinculo</option> {/* opção sem vínculo */}
+  {viagens.map((v) => (
+    <option key={v.id} value={v.id}>
+      {v.placa} - {v.nomeMotorista} - {formatarDataBR(v.dataInicio)}
+    </option>
+  ))}
+</select>
+
 
             <button type="submit" style={styles.button}>
               Salvar Abastecimento

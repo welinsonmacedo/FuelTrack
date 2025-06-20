@@ -22,11 +22,19 @@ export default function LinkRefuelingTravel() {
   const [loading, setLoading] = useState(false);
 
   // Função para formatar data para formato BR
-  const formatarDataBR = (dataISO) => {
-    if (!dataISO) return "";
-    const data = new Date(dataISO);
-    return data.toLocaleDateString("pt-BR");
-  };
+ const formatarDataBR = (data) => {
+  if (!data) return "";
+  
+  // Se for Timestamp Firestore, converte para Date
+  if (data.toDate && typeof data.toDate === "function") {
+    data = data.toDate();
+  }
+  
+  const dataObj = new Date(data);
+  if (isNaN(dataObj.getTime())) return ""; // evita Invalid Date
+  
+  return dataObj.toLocaleDateString("pt-BR");
+};
 
   useEffect(() => {
     const fetchData = async () => {

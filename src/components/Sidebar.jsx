@@ -27,7 +27,8 @@ export default function Sidebar({ aberto, onToggle, onNavigate }) {
     { label: "Viagens", path: "/tripsList" },
     { label: "Relatórios", path: "/report" },
     { label: "Fornecedores", path: "/suppliersList" },
-    { label: "Cadastros", path: "/generalRegistration" },
+    { label: "Alertas", path: "/alertsmaintenance" },
+    { label: "Gestor", path: "/generalRegistration" },
     { label: "Logout", path: "/logout" },
   ];
 
