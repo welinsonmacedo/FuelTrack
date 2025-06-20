@@ -1,21 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../../services/firebase";
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  query,
+  where,
+} from "firebase/firestore";
+import { startOfDay, endOfDay } from "date-fns";
 
 export default function TravelRegistration() {
   const [motoristas, setMotoristas] = useState([]);
   const [caminhoes, setCaminhoes] = useState([]);
+  const [rotas, setRotas] = useState([]);
 
   const [motorista, setMotorista] = useState("");
   const [caminhao, setCaminhao] = useState("");
   const [kmInicial, setKmInicial] = useState("");
   const [kmFinal, setKmFinal] = useState("");
-  const [dataInicio, setDataInicio] = useState("");
-  const [dataFim, setDataFim] = useState("");
-  const [origem, setOrigem] = useState("");
-  const [destino, setDestino] = useState("");
+  const [rotaSelecionada, setRotaSelecionada] = useState("");
   const [obs, setObs] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
+
+  // Novos campos
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
+  const [tipoCarga, setTipoCarga] = useState("");
+  const [valorFrete, setValorFrete] = useState("");
+  const [notaFiscal, setNotaFiscal] = useState("");
+  const [status, setStatus] = useState("");
+  const [tipoViagem, setTipoViagem] = useState("");
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 600);
@@ -26,30 +40,75 @@ export default function TravelRegistration() {
   useEffect(() => {
     const fetchData = async () => {
       const motoristasSnap = await getDocs(collection(db, "motoristas"));
-      setMotoristas(motoristasSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setMotoristas(motoristasSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
 
       const caminhoesSnap = await getDocs(collection(db, "veiculos"));
-      setCaminhoes(caminhoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setCaminhoes(caminhoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+
+      const rotasSnap = await getDocs(collection(db, "rotas"));
+      setRotas(rotasSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     };
 
     fetchData();
   }, []);
 
+  async function existeViagemNoMesmoDia({ motoristaId, caminhaoId, data }) {
+    const viagensRef = collection(db, "viagens");
+    const inicioDia = startOfDay(new Date(data));
+    const fimDia = endOfDay(new Date(data));
+
+    const qMotorista = query(
+      viagensRef,
+      where("motorista", "==", motoristaId),
+      where("dataInicio", ">=", inicioDia),
+      where("dataInicio", "<=", fimDia)
+    );
+
+    const qCaminhao = query(
+      viagensRef,
+      where("caminhao", "==", caminhaoId),
+      where("dataInicio", ">=", inicioDia),
+      where("dataInicio", "<=", fimDia)
+    );
+
+    const [snapMotorista, snapCaminhao] = await Promise.all([
+      getDocs(qMotorista),
+      getDocs(qCaminhao),
+    ]);
+
+    return !snapMotorista.empty || !snapCaminhao.empty;
+  }
+
   const salvarViagem = async (e) => {
     e.preventDefault();
 
-    if (
-      !motorista ||
-      !caminhao ||
-      !kmInicial ||
-      !kmFinal ||
-      !dataInicio ||
-      !dataFim ||
-      !origem ||
-      !destino
-    ) {
+    if (!motorista || !caminhao || !kmInicial || !kmFinal || !rotaSelecionada || !dataInicio || !dataFim) {
       alert("Preencha todos os campos obrigatórios.");
       return;
+    }
+
+    if (Number(kmFinal) < Number(kmInicial)) {
+      alert("O KM Final não pode ser menor que o KM Inicial.");
+      return;
+    }
+
+    const rota = rotas.find((r) => r.id === rotaSelecionada);
+    if (!rota) {
+      alert("Selecione uma rota válida.");
+      return;
+    }
+
+    const conflito = await existeViagemNoMesmoDia({
+      motoristaId: motorista,
+      caminhaoId: caminhao,
+      data: dataInicio,
+    });
+
+    if (conflito) {
+      const confirma = window.confirm(
+        "Já existe uma viagem para este motorista ou caminhão nesta data. Deseja continuar?"
+      );
+      if (!confirma) return;
     }
 
     const novaViagem = {
@@ -57,11 +116,18 @@ export default function TravelRegistration() {
       caminhao,
       kmInicial: Number(kmInicial),
       kmFinal: Number(kmFinal),
-      dataInicio,
-      dataFim,
-      origem,
-      destino,
+      dataInicio: new Date(dataInicio),
+      dataFim: new Date(dataFim),
+      origem: rota.origem,
+      destino: rota.destino,
+      kmRota: rota.km,
+      sigla: rota.sigla,
       observacoes: obs,
+      tipoCarga,
+      valorFrete: Number(valorFrete),
+      notaFiscal,
+      status,
+      tipoViagem,
       criadoEm: new Date(),
     };
 
@@ -72,11 +138,15 @@ export default function TravelRegistration() {
       setCaminhao("");
       setKmInicial("");
       setKmFinal("");
+      setRotaSelecionada("");
+      setObs("");
       setDataInicio("");
       setDataFim("");
-      setOrigem("");
-      setDestino("");
-      setObs("");
+      setTipoCarga("");
+      setValorFrete("");
+      setNotaFiscal("");
+      setStatus("");
+      setTipoViagem("");
     } catch (error) {
       console.error("Erro ao salvar viagem:", error);
       alert("Erro ao salvar viagem.");
@@ -148,11 +218,7 @@ export default function TravelRegistration() {
         <h1 style={styles.title}>Cadastro de Viagem</h1>
         <section style={styles.card}>
           <form onSubmit={salvarViagem} style={styles.form}>
-            <select
-              value={motorista}
-              onChange={(e) => setMotorista(e.target.value)}
-              style={styles.input}
-            >
+            <select value={motorista} onChange={(e) => setMotorista(e.target.value)} style={styles.input}>
               <option value="">Selecionar Motorista</option>
               {motoristas.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -161,11 +227,7 @@ export default function TravelRegistration() {
               ))}
             </select>
 
-            <select
-              value={caminhao}
-              onChange={(e) => setCaminhao(e.target.value)}
-              style={styles.input}
-            >
+            <select value={caminhao} onChange={(e) => setCaminhao(e.target.value)} style={styles.input}>
               <option value="">Selecionar Caminhão</option>
               {caminhoes.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -174,56 +236,41 @@ export default function TravelRegistration() {
               ))}
             </select>
 
-            <input
-              placeholder="KM Inicial"
-              type="number"
-              value={kmInicial}
-              onChange={(e) => setKmInicial(e.target.value)}
-              style={styles.input}
-            />
-            <input
-              placeholder="KM Final"
-              type="number"
-              value={kmFinal}
-              onChange={(e) => setKmFinal(e.target.value)}
-              style={styles.input}
-            />
-            <input
-              placeholder="Data Início"
-              type="date"
-              value={dataInicio}
-              onChange={(e) => setDataInicio(e.target.value)}
-              style={styles.input}
-            />
-            <input
-              placeholder="Data Fim"
-              type="date"
-              value={dataFim}
-              onChange={(e) => setDataFim(e.target.value)}
-              style={styles.input}
-            />
+            <select value={rotaSelecionada} onChange={(e) => setRotaSelecionada(e.target.value)} style={styles.input}>
+              <option value="">Selecionar Rota</option>
+              {rotas.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.sigla} - {r.origem} → {r.destino} ({r.km} km)
+                </option>
+              ))}
+            </select>
 
-            <input
-              placeholder="Origem"
-              type="text"
-              value={origem}
-              onChange={(e) => setOrigem(e.target.value)}
-              style={styles.input}
-            />
-            <input
-              placeholder="Destino"
-              type="text"
-              value={destino}
-              onChange={(e) => setDestino(e.target.value)}
-              style={styles.input}
-            />
+            <input type="number" placeholder="KM Inicial" value={kmInicial} onChange={(e) => setKmInicial(e.target.value)} style={styles.input} />
+            <input type="number" placeholder="KM Final" value={kmFinal} onChange={(e) => setKmFinal(e.target.value)} style={styles.input} />
 
-            <textarea
-              placeholder="Observações"
-              value={obs}
-              onChange={(e) => setObs(e.target.value)}
-              style={styles.textarea}
-            />
+            <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} style={styles.input} />
+            <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} style={styles.input} />
+
+            <input type="text" placeholder="Tipo de Carga" value={tipoCarga} onChange={(e) => setTipoCarga(e.target.value)} style={styles.input} />
+            <input type="number" placeholder="Valor do Frete (R$)" value={valorFrete} onChange={(e) => setValorFrete(e.target.value)} style={styles.input} />
+            <input type="text" placeholder="Nº Nota Fiscal" value={notaFiscal} onChange={(e) => setNotaFiscal(e.target.value)} style={styles.input} />
+
+            <select value={status} onChange={(e) => setStatus(e.target.value)} style={styles.input}>
+              <option value="">Status da Viagem</option>
+              <option value="planejada">Planejada</option>
+              <option value="em_andamento">Em Andamento</option>
+              <option value="concluida">Concluída</option>
+            </select>
+
+            <select value={tipoViagem} onChange={(e) => setTipoViagem(e.target.value)} style={styles.input}>
+              <option value="">Tipo de Viagem</option>
+              <option value="ida">Ida</option>
+              <option value="ida_volta">Ida e Volta</option>
+              <option value="volta">Volta</option>
+            </select>
+
+            <textarea placeholder="Observações" value={obs} onChange={(e) => setObs(e.target.value)} style={styles.textarea} />
+
             <button type="submit" style={styles.button}>
               Salvar Viagem
             </button>

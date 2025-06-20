@@ -49,18 +49,32 @@ export default function Drivers() {
         <div style={styles.modalOverlay} onClick={() => setSelectedMotorista(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <h2 style={{ marginBottom: "20px" }}>{selectedMotorista.nome}</h2>
-            <div style={styles.infoRow}>
-              <span style={styles.label}>CPF:</span>
-              <span>{selectedMotorista.cpf}</span>
-            </div>
-            <div style={styles.infoRow}>
-              <span style={styles.label}>CNH:</span>
-              <span>{selectedMotorista.cnh}</span>
-            </div>
-            <div style={styles.infoRow}>
-              <span style={styles.label}>Categoria:</span>
-              <span>{selectedMotorista.categoria}</span>
-            </div>
+
+            {selectedMotorista.foto && (
+              <img
+                src={selectedMotorista.foto}
+                alt="Foto do Motorista"
+                style={{ width: "100px", maxHeight: "100px", objectFit: "cover", borderRadius: "5px", marginBottom: "15px" }}
+              />
+            )}
+
+            <div style={styles.infoRow}><span style={styles.label}>CPF:</span> <span>{selectedMotorista.cpf}</span></div>
+            <div style={styles.infoRow}><span style={styles.label}>CNH:</span> <span>{selectedMotorista.cnh}</span></div>
+            <div style={styles.infoRow}><span style={styles.label}>Categoria:</span> <span>{selectedMotorista.categoria}</span></div>
+            <div style={styles.infoRow}><span style={styles.label}>Telefone:</span> <span>{selectedMotorista.telefone}</span></div>
+            <div style={styles.infoRow}><span style={styles.label}>WhatsApp:</span> <span>{selectedMotorista.whatsapp}</span></div>
+            <div style={styles.infoRow}><span style={styles.label}>Email:</span> <span>{selectedMotorista.email}</span></div>
+
+            {selectedMotorista.endereco && (
+              <>
+                <div style={styles.infoRow}><span style={styles.label}>CEP:</span> <span>{selectedMotorista.endereco.cep}</span></div>
+                <div style={styles.infoRow}><span style={styles.label}>Rua:</span> <span>{selectedMotorista.endereco.rua}</span></div>
+                <div style={styles.infoRow}><span style={styles.label}>Número:</span> <span>{selectedMotorista.endereco.numero}</span></div>
+                <div style={styles.infoRow}><span style={styles.label}>Bairro:</span> <span>{selectedMotorista.endereco.bairro}</span></div>
+                <div style={styles.infoRow}><span style={styles.label}>Cidade:</span> <span>{selectedMotorista.endereco.cidade}</span></div>
+                <div style={styles.infoRow}><span style={styles.label}>Estado:</span> <span>{selectedMotorista.endereco.estado}</span></div>
+              </>
+            )}
 
             <div style={styles.modalButtons}>
               <button
@@ -180,8 +194,8 @@ const styles = {
   infoRow: {
     display: "flex",
     justifyContent: "flex-start",
-    alignItems:"left",
     marginBottom: "10px",
+    fontSize: "14px",
   },
   label: {
     fontWeight: "bold",

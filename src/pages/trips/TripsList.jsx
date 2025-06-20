@@ -9,7 +9,7 @@ import {
   orderBy,
   updateDoc,
 } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
+
 import { db } from "../../services/firebase";
 
 export default function ViagensList() {
@@ -22,8 +22,6 @@ export default function ViagensList() {
   const [viagemSelecionada, setViagemSelecionada] = useState(null);
   const [filtroMotorista, setFiltroMotorista] = useState("");
   const [filtroCaminhao, setFiltroCaminhao] = useState("");
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchMotoristas() {
@@ -47,19 +45,22 @@ export default function ViagensList() {
       let q = collection(db, "viagens");
       const filtros = [];
 
-      if (filtroMotorista) filtros.push(where("motorista", "==", filtroMotorista));
+      if (filtroMotorista)
+        filtros.push(where("motorista", "==", filtroMotorista));
       if (filtroCaminhao) filtros.push(where("caminhao", "==", filtroCaminhao));
 
       if (filtros.length > 0) q = query(q, ...filtros);
-
       q = query(q, orderBy("dataInicio", "desc"));
+
       const snap = await getDocs(q);
       setViagens(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
       setLoading(false);
     }
 
-    fetchViagens();
-  }, [filtroMotorista, filtroCaminhao]);
+    if (motoristas.length > 0 && caminhoes.length > 0) {
+      fetchViagens();
+    }
+  }, [motoristas, caminhoes, filtroMotorista, filtroCaminhao]);
 
   useEffect(() => {
     async function fetchAbastecimentos() {
@@ -70,14 +71,17 @@ export default function ViagensList() {
         where("viagemId", "==", viagemSelecionada.id)
       );
       const snap = await getDocs(q);
-      setAbastecimentos(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      setAbastecimentos(
+        snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      );
     }
 
     fetchAbastecimentos();
   }, [viagemSelecionada]);
 
   const nomeMotorista = (id) => {
-    const m = motoristas.find((m) => m.id === id);
+    if (!id) return "-";
+    const m = motoristas.find((m) => String(m.id).trim() === String(id).trim());
     return m ? m.nome : id;
   };
 
@@ -107,7 +111,9 @@ export default function ViagensList() {
 
   // Função para remover vínculo de abastecimento com a viagem
   const removerVinculo = async (abastecimentoId) => {
-    if (!window.confirm("Deseja realmente remover o vínculo desse abastecimento?")) {
+    if (
+      !window.confirm("Deseja realmente remover o vínculo desse abastecimento?")
+    ) {
       return;
     }
 
@@ -127,11 +133,21 @@ export default function ViagensList() {
     }
   };
 
-  const formatarData = (data) =>
-    data ? new Date(data).toLocaleDateString("pt-BR") : "-";
+  const formatarData = (data) => {
+    try {
+      return data?.toDate ? data.toDate().toLocaleDateString("pt-BR") : "-";
+    } catch {
+      return "-";
+    }
+  };
 
-  const formatarDataHora = (data) =>
-    data ? new Date(data).toLocaleString("pt-BR") : "-";
+  const formatarDataHora = (data) => {
+    try {
+      return data?.toDate ? data.toDate().toLocaleString("pt-BR") : "-";
+    } catch {
+      return "-";
+    }
+  };
 
   return (
     <div style={styles.container}>
@@ -177,12 +193,13 @@ export default function ViagensList() {
               <th>Data Fim</th>
               <th>Origem</th>
               <th>Destino</th>
+              <th>Rota</th> {/* NOVO */}
             </tr>
           </thead>
           <tbody>
             {viagens.length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ textAlign: "center" }}>
+                <td colSpan="7" style={{ textAlign: "center" }}>
                   Nenhuma viagem encontrada.
                 </td>
               </tr>
@@ -199,6 +216,7 @@ export default function ViagensList() {
                   <td>{formatarData(v.dataFim)}</td>
                   <td>{v.origem || "-"}</td>
                   <td>{v.destino || "-"}</td>
+                  <td>{v.sigla || `${v.origem} → ${v.destino}`}</td>{" "}
                 </tr>
               ))
             )}
@@ -212,17 +230,22 @@ export default function ViagensList() {
             <h2 style={{ marginBottom: 10 }}>🚚 Detalhes da Viagem</h2>
             <div style={{ marginBottom: 10 }}>
               <p>
-                <strong>Motorista:</strong> {nomeMotorista(viagemSelecionada.motorista)}
+                <strong>Motorista:</strong>{" "}
+                {nomeMotorista(viagemSelecionada.motorista)}
               </p>
               <p>
-                <strong>Caminhão:</strong> {infoCaminhao(viagemSelecionada.caminhao)}
+                <strong>Caminhão:</strong>{" "}
+                {infoCaminhao(viagemSelecionada.caminhao)}
               </p>
               <p>
-                <strong>Data Início:</strong> {formatarData(viagemSelecionada.dataInicio)}
+                <strong>Data Início:</strong>{" "}
+                {formatarData(viagemSelecionada.dataInicio)}
               </p>
               <p>
-                <strong>Data Fim:</strong> {formatarData(viagemSelecionada.dataFim)}
+                <strong>Data Fim:</strong>{" "}
+                {formatarData(viagemSelecionada.dataFim)}
               </p>
+
               <p>
                 <strong>KM Inicial:</strong> {viagemSelecionada.kmInicial}
               </p>
@@ -236,7 +259,47 @@ export default function ViagensList() {
                 <strong>Destino:</strong> {viagemSelecionada.destino || "-"}
               </p>
               <p>
-                <strong>Observações:</strong> {viagemSelecionada.observacoes || "Nenhuma"}
+                <strong>Rota:</strong>{" "}
+                {viagemSelecionada.sigla ||
+                  `${viagemSelecionada.origem} → ${viagemSelecionada.destino}`}
+              </p>
+              <p>
+                <strong>Tipo de Carga:</strong>{" "}
+                {viagemSelecionada.tipoCarga || "-"}
+              </p>
+              <p>
+                <strong>Valor do Frete:</strong>{" "}
+                {viagemSelecionada.valorFrete
+                  ? `R$ ${viagemSelecionada.valorFrete.toFixed(2)}`
+                  : "-"}
+              </p>
+              <p>
+                <strong>Nota Fiscal:</strong>{" "}
+                {viagemSelecionada.notaFiscal || "-"}
+              </p>
+              <p>
+                <strong>Status:</strong>{" "}
+                {viagemSelecionada.status === "planejada"
+                  ? "Planejada"
+                  : viagemSelecionada.status === "em_andamento"
+                  ? "Em Andamento"
+                  : viagemSelecionada.status === "concluida"
+                  ? "Concluída"
+                  : "-"}
+              </p>
+              <p>
+                <strong>Tipo de Viagem:</strong>{" "}
+                {viagemSelecionada.tipoViagem === "ida"
+                  ? "Ida"
+                  : viagemSelecionada.tipoViagem === "volta"
+                  ? "Volta"
+                  : viagemSelecionada.tipoViagem === "ida_volta"
+                  ? "Ida e Volta"
+                  : "-"}
+              </p>
+              <p>
+                <strong>Observações:</strong>{" "}
+                {viagemSelecionada.observacoes || "Nenhuma"}
               </p>
             </div>
 
@@ -267,9 +330,13 @@ export default function ViagensList() {
                 <tbody>
                   {abastecimentos.map((a) => (
                     <tr key={a.id}>
-                      <td style={styles.cell}>{formatarDataHora(a.dataHora)}</td>
+                      <td style={styles.cell}>
+                        {formatarDataHora(a.dataHora)}
+                      </td>
                       <td style={styles.cell}>{a.litros ?? "-"}</td>
-                      <td style={styles.cell}>{a.precoLitro?.toFixed(2) ?? "-"}</td>
+                      <td style={styles.cell}>
+                        {a.precoLitro?.toFixed(2) ?? "-"}
+                      </td>
                       <td style={styles.cell}>
                         {a.litros && a.precoLitro
                           ? `R$ ${(a.litros * a.precoLitro).toFixed(2)}`
@@ -295,7 +362,11 @@ export default function ViagensList() {
               Fechar
             </button>
             <button
-              style={{ ...styles.btnClose, marginLeft: 10, backgroundColor: "#e53935" }}
+              style={{
+                ...styles.btnClose,
+                marginLeft: 10,
+                backgroundColor: "#e53935",
+              }}
               onClick={() => apagarViagem(viagemSelecionada.id)}
             >
               Apagar Viagem

@@ -28,6 +28,7 @@ import LinkRefuelingTravel from "./pages/linkRefuelingTravel/LinkRefuelingTravel
 import EditFuelRegister from "./pages/editFuelRegister/EditFuelRegister";
 import EditTravelRegister from "./pages/editTravelRegister/EditTravelRegister";
 import EditSupplier from "./pages/editSupplier/EditSupplier";
+import RouteRegistration from "./pages/routeRegistration/RouteRegistration";
 
 export default function App() {
   return (
@@ -269,6 +270,16 @@ export default function App() {
           <PrivateRoute>
             <Layout>
               <EditSupplier/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+            <Route
+        path="/routeregistration" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <RouteRegistration/>
             </Layout>
           </PrivateRoute>
         }
