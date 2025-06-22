@@ -69,6 +69,16 @@ const styles = {
     fontWeight: "600",
     marginRight: 6,
   },
+  selectMotorista: {
+    padding: "6px 10px",
+    borderRadius: 4,
+    border: "1px solid #bbb",
+    fontSize: 14,
+    cursor: "pointer",
+    backgroundColor: "#fff",
+    color: "#222",
+    minWidth: 200,
+  },
 };
 
 function useIsMobile() {
@@ -88,16 +98,22 @@ function useIsMobile() {
 export default function AdminUserRoleManager() {
   const { user } = useUser();
   const [usuarios, setUsuarios] = useState([]);
+  const [motoristas, setMotoristas] = useState([]);
   const isMobile = useIsMobile();
 
   useEffect(() => {
     if (user?.tipo !== "admin") return;
 
-    async function fetchUsuarios() {
-      const snapshot = await getDocs(collection(db, "usuarios"));
-      setUsuarios(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    async function fetchData() {
+      const usuariosSnap = await getDocs(collection(db, "usuarios"));
+      const usuariosData = usuariosSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setUsuarios(usuariosData);
+
+      const motoristasSnap = await getDocs(collection(db, "motoristas"));
+      const motoristasData = motoristasSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setMotoristas(motoristasData);
     }
-    fetchUsuarios();
+    fetchData();
   }, [user]);
 
   async function alterarTipo(id, novoTipo) {
@@ -106,6 +122,16 @@ export default function AdminUserRoleManager() {
 
     await updateDoc(doc(db, "usuarios", id), { tipo: novoTipo });
     setUsuarios((prev) => prev.map((u) => (u.id === id ? { ...u, tipo: novoTipo } : u)));
+  }
+
+  async function alterarMotorista(id, novoMotoristaId) {
+    const confirmado = window.confirm("Tem certeza que deseja alterar o motorista vinculado ao usuário?");
+    if (!confirmado) return;
+
+    await updateDoc(doc(db, "usuarios", id), { motoristaId: novoMotoristaId });
+    setUsuarios((prev) =>
+      prev.map((u) => (u.id === id ? { ...u, motoristaId: novoMotoristaId } : u))
+    );
   }
 
   if (user?.tipo !== "admin")
@@ -123,10 +149,11 @@ export default function AdminUserRoleManager() {
               <th style={styles.th}>Email</th>
               <th style={styles.th}>Tipo</th>
               <th style={styles.th}>Alterar Tipo</th>
+              <th style={styles.th}>Motorista Vinculado</th>
             </tr>
           </thead>
           <tbody>
-            {usuarios.map(({ id, nome, email, tipo }) => (
+            {usuarios.map(({ id, nome, email, tipo, motoristaId }) => (
               <tr key={id}>
                 <td style={styles.td}>{nome || id}</td>
                 <td style={styles.td}>{email}</td>
@@ -142,6 +169,20 @@ export default function AdminUserRoleManager() {
                     <option value="motorista">Motorista</option>
                   </select>
                 </td>
+                <td style={styles.td}>
+                  <select
+                    style={styles.selectMotorista}
+                    value={motoristaId || ""}
+                    onChange={(e) => alterarMotorista(id, e.target.value)}
+                  >
+                    <option value="">-- Nenhum --</option>
+                    {motoristas.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.nome || m.id}
+                      </option>
+                    ))}
+                  </select>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -150,7 +191,7 @@ export default function AdminUserRoleManager() {
 
       {isMobile && (
         <div>
-          {usuarios.map(({ id, nome, email, tipo }) => (
+          {usuarios.map(({ id, nome, email, tipo, motoristaId }) => (
             <div key={id} style={styles.card}>
               <div style={styles.cardRow}>
                 <span style={styles.cardLabel}>Usuário:</span> {nome || id}
@@ -170,6 +211,20 @@ export default function AdminUserRoleManager() {
                   <option value="admin">Admin</option>
                   <option value="padrao">Padrão</option>
                   <option value="motorista">Motorista</option>
+                </select>
+              </div>
+              <div style={styles.cardRow}>
+                <select
+                  style={styles.selectMotorista}
+                  value={motoristaId || ""}
+                  onChange={(e) => alterarMotorista(id, e.target.value)}
+                >
+                  <option value="">-- Nenhum --</option>
+                  {motoristas.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.nome || m.id}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

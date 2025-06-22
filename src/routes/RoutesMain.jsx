@@ -30,12 +30,15 @@ import TypesMaintenancePage from "../pages/typesMaintenancePage/TypesMaintenance
 import MaintenancePage from "../pages/maintenancePage/MaintenancePage";
 import AlertsMaintenancePage from "../pages/alertsMaintenancePage/AlertsMaintenancePage";
 import UserProfile from "../components/UserProfile";
-import VehicleChecklistComplete from "../pages/vehicleChecklist/VehicleChecklist";
 import CompanyRegistration from "../pages/companyRegistration/CompanyRegistration";
 import AdminUserRoleManager from "../pages/adminUser/AdminUserRoleManager";
 import DriverDashboard from "../driver/DriverDashboard";
+import VehicleChecklistWithDefects from "../pages/vehicleChecklist/VehicleChecklist";
+import DriverRoute from "./DriveRoute";
+import QRCodeScanner from "../driver/QRCodeScanner";
+import ProtectedFallback from "./ProtectedFallback";
 
-const privateRoutes = (
+const privateRoutesMain = (
   <>
     <Route
       path="/dashboard"
@@ -69,6 +72,16 @@ const privateRoutes = (
     />
     <Route
       path="/drivers/driverregister"
+      element={
+        <PrivateRoute>
+          <Layout>
+            <DriverRegister />
+          </Layout>
+        </PrivateRoute>
+      }
+    />
+    <Route
+      path="/driverregister"
       element={
         <PrivateRoute>
           <Layout>
@@ -327,12 +340,23 @@ const privateRoutes = (
         </PrivateRoute>
       }
     />
+   
+     <Route
+      path="/checklist/:viagemId"
+      element={
+        <DriverRoute>
+          <Layout>
+            <VehicleChecklistWithDefects/>
+          </Layout>
+        </DriverRoute>
+      }
+    />
     <Route
       path="/checklist"
       element={
         <PrivateRoute>
           <Layout>
-            <VehicleChecklistComplete/>
+              <VehicleChecklistWithDefects/>
           </Layout>
         </PrivateRoute>
       }
@@ -360,14 +384,26 @@ const privateRoutes = (
      <Route
       path="/driverdashboard"
       element={
-        <PrivateRoute>
+       <DriverRoute>
           <Layout>
             <DriverDashboard/>
           </Layout>
-        </PrivateRoute>
+       </DriverRoute>
       }
     />
+
+     <Route
+      path="/qr-code-cupon"
+      element={
+       <DriverRoute>
+          <Layout>
+            <QRCodeScanner/>
+          </Layout>
+       </DriverRoute>
+      }
+    />
+    <Route path="*" element={<ProtectedFallback/>} />
   </>
 );
 
-export default privateRoutes;
+export default privateRoutesMain;

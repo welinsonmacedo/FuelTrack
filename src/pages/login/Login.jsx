@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "firebase/auth";
-import { auth } from "../../services/firebase";
+import { auth, db } from "../../services/firebase"; // importe db aqui
+import { doc, getDoc } from "firebase/firestore";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -13,9 +14,23 @@ export default function Login() {
     setErro("");
 
     try {
-      await setPersistence(auth, browserLocalPersistence); // persistência
-      await signInWithEmailAndPassword(auth, email, senha);
-      window.location.replace("/dashboard");
+      await setPersistence(auth, browserLocalPersistence);
+      const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+      
+      const uid = userCredential.user.uid;
+      const userDoc = await getDoc(doc(db, "usuarios", uid));
+      if (!userDoc.exists()) {
+        setErro("Dados do usuário não encontrados.");
+        return;
+      }
+
+      const userData = userDoc.data();
+
+      if (userData.tipo === "motorista") {
+        window.location.replace("/driverdashboard");
+      } else {
+        window.location.replace("/dashboard");
+      }
     } catch (error) {
       console.error("Erro no login:", error.code);
       if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password") {
@@ -27,6 +42,7 @@ export default function Login() {
       }
     }
   };
+
 
   return (
     <div style={styles.container}>

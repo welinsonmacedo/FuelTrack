@@ -1,16 +1,18 @@
-// src/pages/UserRegister.jsx
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "../../services/firebase";
+import { doc, setDoc, addDoc, updateDoc, collection } from "firebase/firestore";
+import { db } from "../../services/firebase";
+import { useNavigate } from "react-router-dom";
+import { secondaryAuth } from "../../services/firebase";
 
 export default function UserRegister() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [tipo, setTipo] = useState("padrao"); // valor padrão 'padrao'
+  const [tipo, setTipo] = useState("padrao");
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,11 +20,11 @@ export default function UserRegister() {
     setErro("");
 
     try {
-      // Cria o usuário no Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+      // Cria o usuário no Firebase Auth (secondaryAuth)
+      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, senha);
       const userId = userCredential.user.uid;
 
-      // Cria o documento no Firestore com dados do usuário, incluindo o tipo
+      // Cria o documento na coleção 'usuarios'
       await setDoc(doc(db, "usuarios", userId), {
         nome,
         email,
@@ -30,6 +32,26 @@ export default function UserRegister() {
         criadoEm: new Date(),
       });
 
+      if (tipo === "motorista") {
+        // Cria o documento motorista vinculado ao userId
+        const motoristaRef = await addDoc(collection(db, "motoristas"), {
+          userId,
+          nome,
+          email,
+          criadoEm: new Date(),
+        });
+
+        // Atualiza o usuário com o motoristaId para vínculo
+        await updateDoc(doc(db, "usuarios", userId), {
+          motoristaId: motoristaRef.id,
+        });
+
+        // Navega para a tela de cadastro de motorista, enviando dados
+        navigate("/driverregister", { state: { userId, nome, email, motoristaId: motoristaRef.id } });
+        return;
+      }
+
+      // Se não for motorista, limpa o formulário e mostra mensagem de sucesso
       setMensagem("Usuário cadastrado com sucesso!");
       setNome("");
       setEmail("");
@@ -74,7 +96,6 @@ export default function UserRegister() {
             value={tipo}
             onChange={(e) => setTipo(e.target.value)}
             style={styles.input}
-            required
           >
             <option value="padrao">Usuário Padrão</option>
             <option value="admin">Administrador</option>
@@ -83,7 +104,6 @@ export default function UserRegister() {
           <button type="submit" style={styles.button}>
             Cadastrar Usuário
           </button>
-
           {mensagem && <p style={{ color: "green", marginTop: 10 }}>{mensagem}</p>}
           {erro && <p style={{ color: "red", marginTop: 10 }}>{erro}</p>}
         </form>

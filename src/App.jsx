@@ -1,12 +1,12 @@
 import { Routes } from "react-router-dom";
 import publicRoutes from "./routes/PublicRoutes";
-import privateRoutes from "./routes/PrivateRoutes";
 import "./App.css"
+import privateRoutesMain from "./routes/RoutesMain";
 export default function App() {
   return (
     <Routes>
       {publicRoutes}
-      {privateRoutes}
+      {privateRoutesMain}
     </Routes>
   );
 }

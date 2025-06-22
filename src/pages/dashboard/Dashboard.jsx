@@ -3,7 +3,8 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import Card from "../../components/Card";
 import AlertsMaintenancePage from "../alertsMaintenancePage/AlertsMaintenancePage";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
+import { useUser } from "../../contexts/UserContext"; // ajuste o caminho conforme seu projeto
 
 export default function Dashboard() {
   const [dados, setDados] = useState({
@@ -15,12 +16,9 @@ export default function Dashboard() {
     abastecimentos: 0,
   });
 
+  const { user, loading } = useUser();
   const navigate = useNavigate();
   const [mesAtual, setMesAtual] = useState(new Date());
-
-  function abrirManutencoes() {
-    navigate("/maintenance"); // ajuste a rota conforme seu app
-  }
 
   const formatarMesAno = (data) =>
     data.toLocaleString("pt-BR", { month: "long", year: "numeric" });
@@ -35,63 +33,36 @@ export default function Dashboard() {
     async function fetchData() {
       const hoje = new Date();
 
-      // Buscar viagens
       const viagensSnap = await getDocs(collection(db, "viagens"));
-      const viagens = viagensSnap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const viagens = viagensSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-      // Filtra viagens em andamento
       const viagensEmAndamento = viagens.filter((v) => {
         if (!v.dataInicio || !v.dataFim) return false;
-
         let dataInicio, dataFim;
         try {
-          dataInicio = v.dataInicio.toDate
-            ? v.dataInicio.toDate()
-            : new Date(v.dataInicio);
+          dataInicio = v.dataInicio.toDate ? v.dataInicio.toDate() : new Date(v.dataInicio);
           dataFim = v.dataFim.toDate ? v.dataFim.toDate() : new Date(v.dataFim);
         } catch {
-          console.log("Erro na conversão da data", v.dataInicio, v.dataFim);
           return false;
         }
         return hoje >= dataInicio && hoje <= dataFim;
       });
 
-      // Extrai ids motorista e veículo
-      const motoristasEmViagemIds = viagensEmAndamento
-        .map((v) => v.motorista)
-        .filter((id) => typeof id === "string");
+      const motoristasEmViagemIds = viagensEmAndamento.map((v) => v.motorista).filter(Boolean);
+      const veiculosEmViagemIds = viagensEmAndamento.map((v) => v.caminhao).filter(Boolean);
 
-      const veiculosEmViagemIds = viagensEmAndamento
-        .map((v) => v.caminhao || v.caminhao || null)
-        .filter((id) => typeof id === "string");
-
-      // Busca motoristas
       const motoristasSnap = await getDocs(collection(db, "motoristas"));
-      const motoristas = motoristasSnap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      // Disponíveis: não em viagem e disponíveis no campo
+      const motoristas = motoristasSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       const motoristasDisponiveis = motoristas.filter(
         (m) => !motoristasEmViagemIds.includes(m.id)
       );
 
-      // Busca veículos
       const veiculosSnap = await getDocs(collection(db, "veiculos"));
-      const veiculos = veiculosSnap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
+      const veiculos = veiculosSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       const veiculosDisponiveis = veiculos.filter(
         (v) => !veiculosEmViagemIds.includes(v.id)
       );
 
-      // Filtro por mês (viagens e abastecimentos)
       const inicioMes = new Date(mesAtual.getFullYear(), mesAtual.getMonth(), 1);
       const fimMes = new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1, 0);
 
@@ -99,9 +70,7 @@ export default function Dashboard() {
         if (!v.dataInicio) return false;
         let dataInicio;
         try {
-          dataInicio = v.dataInicio.toDate
-            ? v.dataInicio.toDate()
-            : new Date(v.dataInicio);
+          dataInicio = v.dataInicio.toDate ? v.dataInicio.toDate() : new Date(v.dataInicio);
         } catch {
           return false;
         }
@@ -109,10 +78,7 @@ export default function Dashboard() {
       });
 
       const abastecimentosSnap = await getDocs(collection(db, "abastecimentos"));
-      const abastecimentos = abastecimentosSnap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const abastecimentos = abastecimentosSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
       const abastecimentosMes = abastecimentos.filter((a) => {
         if (!a.data) return false;
@@ -138,6 +104,10 @@ export default function Dashboard() {
     fetchData();
   }, [mesAtual]);
 
+  // 👇 Redirecionamento sempre após hooks
+  if (loading) return <div>Carregando...</div>;
+  if (user?.tipo === "motorista") return <Navigate to="/driverdashboard" replace />;
+
   return (
     <div style={styles.container}>
       <main style={styles.main}>
@@ -155,35 +125,28 @@ export default function Dashboard() {
 
         <div style={styles.headerBox}>
           <div style={styles.mesControle}>
-            <button onClick={() => alterarMes(-1)} style={styles.btnMes}>
-              ◀
-            </button>
+            <button onClick={() => alterarMes(-1)} style={styles.btnMes}>◀</button>
             <span style={styles.mesTexto}>{formatarMesAno(mesAtual)}</span>
-            <button onClick={() => alterarMes(1)} style={styles.btnMes}>
-              ▶
-            </button>
+            <button onClick={() => alterarMes(1)} style={styles.btnMes}>▶</button>
           </div>
         </div>
 
         <div style={styles.cardsSection}>
           <h2 style={styles.sectionTitle}>Resumo do Mês</h2>
           <div style={styles.cardsContainer}>
-            <Card title="Viagens" icon="🛣️">
-              {dados.viagens} realizadas
-            </Card>
-            <Card title="Abastecimentos" icon="⛽">
-              {dados.abastecimentos} registrados
-            </Card>
+            <Card title="Viagens" icon="🛣️">{dados.viagens} realizadas</Card>
+            <Card title="Abastecimentos" icon="⛽">{dados.abastecimentos} registrados</Card>
           </div>
         </div>
 
         <div style={styles.alertSection}>
-          <AlertsMaintenancePage onAlertaClick={abrirManutencoes} isDashboard />
+          <AlertsMaintenancePage onAlertaClick={() => navigate("/maintenance")} isDashboard />
         </div>
       </main>
     </div>
   );
 }
+
 
 const styles = {
   container: {
