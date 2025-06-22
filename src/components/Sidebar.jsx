@@ -25,30 +25,33 @@ export default function TopNavbar({ onNavigate }) {
 
   return (
     <header className="navbar">
-      <div className="navbar-container">
-        <button
-          className="hamburger"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle menu"
-        >
-          <div className={`bar ${isOpen ? "bar1" : ""}`} />
-          <div className={`bar ${isOpen ? "bar2" : ""}`} />
-          <div className={`bar ${isOpen ? "bar3" : ""}`} />
-        </button>
+  <div className="navbar-container">
+     <h2 className="logo logomobile">FuelTrackPro</h2> {/* MOVIDA AQUI */}
 
-        <nav className={`nav-links ${isOpen ? "open" : ""}`}>
-          <h2 className="logo">FuelTrackPro</h2>
-          {menuItems.map((item) => (
-            <button
-              key={item.label}
-              className="nav-item"
-              onClick={() => handleNavigate(item.path)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
-      </div>
-    </header>
+    <button
+      className="hamburger"
+      onClick={() => setIsOpen(!isOpen)}
+      aria-label="Toggle menu"
+    >
+      <div className={`bar ${isOpen ? "bar1" : ""}`} />
+      <div className={`bar ${isOpen ? "bar2" : ""}`} />
+      <div className={`bar ${isOpen ? "bar3" : ""}`} />
+    </button>
+
+    <nav className={`nav-links ${isOpen ? "open" : ""}`}>
+     
+      {menuItems.map((item) => (
+        <button
+          key={item.label}
+          className="nav-item"
+          onClick={() => handleNavigate(item.path)}
+        >
+          {item.label}
+        </button>
+      ))}
+    </nav>
+  </div>
+</header>
+
   );
 }

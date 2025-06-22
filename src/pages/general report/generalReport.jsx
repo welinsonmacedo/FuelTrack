@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "../../services/firebase"; // Assuming this path is correct
 import jsPDF from "jspdf";
-
+import "./style.css"
 export default function RelatoriosFrota() {
   const [motoristas, setMotoristas] = useState([]);
   const [veiculos, setVeiculos] = useState([]);
@@ -641,7 +641,7 @@ function nomeFornecedor(id) {
       </div>
 
       <div style={styles.filtrosContainer}>
-        <div>
+        <div className="containerInput">
           <label>Motorista:</label>
           <select
             style={styles.select}
@@ -656,7 +656,7 @@ function nomeFornecedor(id) {
             ))}
           </select>
         </div>
-        <div>
+        <div className="containerInput">
           <label>Veículo:</label>
           <select
             style={styles.select}
@@ -671,7 +671,7 @@ function nomeFornecedor(id) {
             ))}
           </select>
         </div>
-        <div>
+        <div className="containerInput">
           <label>Data Início:</label>
           <input
             type="date"
@@ -680,7 +680,7 @@ function nomeFornecedor(id) {
             style={styles.input}
           />
         </div>
-        <div>
+        <div className="containerInput">
           <label>Data Fim:</label>
           <input
             type="date"

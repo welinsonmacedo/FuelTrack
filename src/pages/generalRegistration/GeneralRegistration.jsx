@@ -15,7 +15,7 @@ export default function GeneralRegistration() {
 
   return (
     <main style={styles.container}>
-      <h1 style={styles.header}>Painel Gestor</h1>
+      
 
       <section
         style={{
@@ -60,6 +60,9 @@ export default function GeneralRegistration() {
           </Button>
           <Button onClick={() => navigateTo("/odometerpage")} icon="📟">
             Odômetros
+          </Button>
+            <Button onClick={() => navigateTo("/checklist")} icon="📟">
+            Checklist
           </Button>
         </Card>
 
@@ -122,32 +125,24 @@ const styles = {
     minHeight: "100vh",
     color: "#1e293b",
   },
-  header: {
-    fontSize: 36,
-    fontWeight: 700,
-    textAlign: "center",
-    marginBottom: 56,
-    letterSpacing: "0.03em",
-    color: "#334155",
-  },
+ 
   panel: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
   card: {
-    backgroundColor: "rgba(255, 255, 255, 0.85)",
+   
     backdropFilter: "blur(14px)",
     borderRadius: 10,
     padding: 36,
-    boxShadow:
-      "0 10px 30px rgba(100, 116, 139, 0.12), 0 4px 6px rgba(100, 116, 139, 0.06)",
+
     flex: 1,
     minWidth: 280,
     display: "flex",
     flexDirection: "column",
     gap: 28,
-    border: "1px solid #e2e8f0",
+   
     transition: "transform 0.3s ease, box-shadow 0.3s ease",
     userSelect: "none",
     cursor: "default",
@@ -192,11 +187,3 @@ const styles = {
   },
 };
 
-// Se quiser, adicione o CSS global para o hover/focus:
-// button:hover,
-// button:focus-visible {
-//   background-color: #1d4ed8;
-//   box-shadow: 0 12px 28px rgba(29, 78, 216, 0.5), inset 0 -4px 0 rgba(0, 0, 0, 0.15);
-//   transform: translateY(-2px);
-//   outline: none;
-// }

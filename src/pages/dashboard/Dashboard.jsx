@@ -249,13 +249,14 @@ const styles = {
     color: "#2c3e50",
   },
   headerBox: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
-    marginBottom: "30px",
-    gap: "20px",
-  },
+  display: "flex",
+  justifyContent: "center", // ⬅️ centraliza horizontalmente
+  alignItems: "center",
+  flexWrap: "wrap",
+  marginBottom: "30px",
+  gap: "20px",
+},
+
   mesControle: {
     display: "flex",
     alignItems: "center",
