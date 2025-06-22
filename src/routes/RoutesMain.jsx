@@ -13,7 +13,7 @@ import EditDriversRecord from "../pages/editDriversRecord/EditDriversRecord";
 import EditTruckRegister from "../pages/editTruckRegister/EditTruckRegister";
 import Vehicles from "../pages/vehicles/Vehicles";
 import SupplyAndTravelList from "../pages/supplyAndTravelList/supplyAndTravelList";
-import GeneralRegistration from "../pages/generalRegistration/GeneralRegistration";
+
 import Logout from "../components/Logout";
 import SupplierRegister from "../pages/supplierRegister/SupplierRegister";
 import Suppliers from "../pages/suppliersList/Suppliers";
@@ -157,16 +157,6 @@ const privateRoutesMain = (
         <PrivateRoute>
           <Layout>
             <SupplyAndTravelList />
-          </Layout>
-        </PrivateRoute>
-      }
-    />
-    <Route
-      path="/generalRegistration"
-      element={
-        <PrivateRoute>
-          <Layout>
-            <GeneralRegistration />
           </Layout>
         </PrivateRoute>
       }
