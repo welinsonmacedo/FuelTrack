@@ -1,33 +1,43 @@
-import React, { useState } from "react";
-import { QrReader } from "react-qr-reader";
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useRef, useState } from "react";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 export default function QRCodeScanner({ onResult }) {
+  const scannerRef = useRef(null);
   const [scanResult, setScanResult] = useState(null);
   const [error, setError] = useState("");
 
-  const handleScan = (result) => {
-    if (result?.text) {
-      setScanResult(result.text);
-      onResult && onResult(result.text); // callback para retornar ao pai
-    }
-  };
+  useEffect(() => {
+    if (!scannerRef.current) {
+      scannerRef.current = new Html5QrcodeScanner("reader", {
+        fps: 10,
+        qrbox: 250,
+        rememberLastUsedCamera: true,
+      });
 
-  const handleError = (err) => {
-    console.error("Erro ao ler QR code:", err);
-    setError("Erro ao acessar a câmera ou ler o QR Code.");
-  };
+      scannerRef.current.render(
+        (decodedText) => {
+          setScanResult(decodedText);
+          onResult && onResult(decodedText);
+          scannerRef.current.clear().catch(console.error); // parar scanner após leitura
+        },
+        (scanError) => {
+          console.warn("Erro ao escanear:", scanError);
+          // Não define erro aqui porque falhas contínuas são esperadas durante a leitura
+        }
+      );
+    }
+
+    return () => {
+      scannerRef.current?.clear().catch(console.error);
+    };
+  }, [onResult]);
 
   return (
     <div style={styles.container}>
       <h3 style={styles.title}>Escaneie o QR Code do Cupom</h3>
-      <div style={styles.readerContainer}>
-        <QrReader
-          constraints={{ facingMode: "environment" }} // câmera traseira em mobile
-          onResult={handleScan}
-          onError={handleError}
-          style={{ width: "100%" }}
-        />
-      </div>
+      <div id="reader" style={styles.readerContainer}></div>
+
       {scanResult && <p style={styles.result}>Resultado: {scanResult}</p>}
       {error && <p style={styles.error}>{error}</p>}
     </div>
