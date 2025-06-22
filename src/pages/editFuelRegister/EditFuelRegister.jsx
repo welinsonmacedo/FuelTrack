@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, Timestamp } from "firebase/firestore";
 import { db } from "../../services/firebase";
 
 export default function EditFuelRegister() {
@@ -21,7 +21,7 @@ export default function EditFuelRegister() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAbastecimento = async () => {
+    async function fetchAbastecimento() {
       try {
         const docRef = doc(db, "abastecimentos", id);
         const docSnap = await getDoc(docRef);
@@ -29,12 +29,24 @@ export default function EditFuelRegister() {
         if (docSnap.exists()) {
           const data = docSnap.data();
 
-          // Converter Timestamp para formato aceito no input datetime-local
-          const dataHoraConvertida = data.dataHora?.toDate?.().toISOString().slice(0, 16);
+          // Tratamento seguro para o campo dataHora
+          let dataHoraConvertida = "";
+          if (data.dataHora) {
+            if (typeof data.dataHora.toDate === "function") {
+              // Firestore Timestamp
+              dataHoraConvertida = data.dataHora.toDate().toISOString().slice(0, 16);
+            } else if (data.dataHora instanceof Date) {
+              // Já um Date do JS
+              dataHoraConvertida = data.dataHora.toISOString().slice(0, 16);
+            } else if (typeof data.dataHora === "string") {
+              // String ISO (ex: "2023-06-22T14:00")
+              dataHoraConvertida = data.dataHora.slice(0, 16);
+            }
+          }
 
           setAbastecimento({
             ...data,
-            dataHora: dataHoraConvertida || "",
+            dataHora: dataHoraConvertida,
           });
         } else {
           alert("Abastecimento não encontrado.");
@@ -46,7 +58,7 @@ export default function EditFuelRegister() {
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     fetchAbastecimento();
   }, [id, navigate]);
@@ -62,7 +74,9 @@ export default function EditFuelRegister() {
       const docRef = doc(db, "abastecimentos", id);
       await updateDoc(docRef, {
         ...abastecimento,
-        dataHora: new Date(abastecimento.dataHora), // converte de volta para Date
+        dataHora: abastecimento.dataHora
+          ? Timestamp.fromDate(new Date(abastecimento.dataHora))
+          : null,
       });
       alert("Abastecimento atualizado com sucesso!");
       navigate("/dashboard");
@@ -112,7 +126,7 @@ export default function EditFuelRegister() {
         <label style={styles.label}>
           Data e Hora:
           <input
-            type="date"
+            type="datetime-local"
             name="dataHora"
             value={abastecimento.dataHora}
             onChange={handleChange}

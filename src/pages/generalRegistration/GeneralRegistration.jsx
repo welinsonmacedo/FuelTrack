@@ -15,8 +15,6 @@ export default function GeneralRegistration() {
 
   return (
     <main style={styles.container}>
-      
-
       <section
         style={{
           ...styles.panel,
@@ -29,13 +27,16 @@ export default function GeneralRegistration() {
             Viagens
           </Button>
           <Button onClick={() => navigateTo("/supplyRegistration")} icon="⛽">
-          Abastecimentos
+            Abastecimentos
           </Button>
-          <Button onClick={() => navigateTo("/drivers/driverregister")} icon="👷‍♂️">
+          <Button
+            onClick={() => navigateTo("/drivers/driverregister")}
+            icon="👷‍♂️"
+          >
             Motoristas
           </Button>
           <Button onClick={() => navigateTo("/truckregister")} icon="🚛">
-           Veículos
+            Veículos
           </Button>
           <Button onClick={() => navigateTo("/userregister")} icon="👤">
             Usuários
@@ -61,7 +62,7 @@ export default function GeneralRegistration() {
           <Button onClick={() => navigateTo("/odometerpage")} icon="📟">
             Odômetros
           </Button>
-            <Button onClick={() => navigateTo("/checklist")} icon="📟">
+          <Button onClick={() => navigateTo("/checklist")} icon="📟">
             Checklist
           </Button>
         </Card>
@@ -70,6 +71,16 @@ export default function GeneralRegistration() {
           <Button onClick={() => navigateTo("/linkRefuelingTravel")} icon="🔄">
             Vincular Abastecimentos
           </Button>
+          <Button onClick={() => navigateTo("/companyregistration")} icon="🔄">
+            Cadastro Empresa
+          </Button>
+          <Button onClick={() => navigateTo("/adminusermanager")} icon="🔄">
+            Admin User Manager
+          </Button>
+           <Button onClick={() => navigateTo("/driverdashboard")} icon="🔄">
+            APP MOTORISTAS
+          </Button>
+      
         </Card>
       </section>
     </main>
@@ -82,7 +93,10 @@ function Card({ title, icon, children }) {
       aria-labelledby={`${title.replace(/\s+/g, "").toLowerCase()}-title`}
       style={styles.card}
     >
-      <h2 id={`${title.replace(/\s+/g, "").toLowerCase()}-title`} style={styles.cardTitle}>
+      <h2
+        id={`${title.replace(/\s+/g, "").toLowerCase()}-title`}
+        style={styles.cardTitle}
+      >
         <span aria-hidden="true" style={styles.cardIcon}>
           {icon}
         </span>
@@ -120,19 +134,19 @@ const styles = {
     maxWidth: 1280,
     margin: "0 auto",
     padding: "56px 32px",
-    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+    fontFamily:
+      "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
     backgroundColor: "#f5f7fa",
     minHeight: "100vh",
     color: "#1e293b",
   },
- 
+
   panel: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
   card: {
-   
     backdropFilter: "blur(14px)",
     borderRadius: 10,
     padding: 36,
@@ -142,7 +156,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: 28,
-   
+
     transition: "transform 0.3s ease, box-shadow 0.3s ease",
     userSelect: "none",
     cursor: "default",
@@ -186,4 +200,3 @@ const styles = {
     fontSize: 22,
   },
 };
-

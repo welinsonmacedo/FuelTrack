@@ -11,7 +11,6 @@ export default function Suppliers() {
   const [fornecedores, setFornecedores] = useState([]);
   const [fornecedorSelecionado, setFornecedorSelecionado] = useState(null);
   const [busca, setBusca] = useState("");
-  const [loadingExcluir, setLoadingExcluir] = useState(false);
   const navigate = useNavigate();
   const { showAlert } = useUI();
 
@@ -24,7 +23,7 @@ export default function Suppliers() {
   const excluirFornecedor = async (id) => {
     if (window.confirm("Tem certeza que deseja excluir este fornecedor?")) {
       try {
-        setLoadingExcluir(true);
+   
         await deleteDoc(doc(db, "fornecedores", id));
         setFornecedorSelecionado(null);
         showAlert("Fornecedor excluído com sucesso!", "success");
@@ -32,8 +31,6 @@ export default function Suppliers() {
       } catch (error) {
         showAlert("Erro ao excluir fornecedor.", "error");
         console.error(error);
-      } finally {
-        setLoadingExcluir(false);
       }
     }
   };
@@ -77,57 +74,41 @@ export default function Suppliers() {
       </ul>
 
       <Modal
-        isOpen={!!fornecedorSelecionado}
-        onClose={() => setFornecedorSelecionado(null)}
-        title={fornecedorSelecionado?.nomeFantasia || fornecedorSelecionado?.razaoSocial}
-      >
-        <div style={styles.infoRow}>
-          <span style={styles.label}>Razão Social:</span>
-          <span>{fornecedorSelecionado?.razaoSocial}</span>
-        </div>
-        <div style={styles.infoRow}>
-          <span style={styles.label}>Nome Fantasia:</span>
-          <span>{fornecedorSelecionado?.nomeFantasia}</span>
-        </div>
-        <div style={styles.infoRow}>
-          <span style={styles.label}>CNPJ:</span>
-          <span>{fornecedorSelecionado?.cnpj}</span>
-        </div>
-        <div style={styles.infoRow}>
-          <span style={styles.label}>Endereço:</span>
-          <span>{fornecedorSelecionado?.endereco}</span>
-        </div>
-        <div style={styles.infoRow}>
-          <span style={styles.label}>Telefone:</span>
-          <span>{fornecedorSelecionado?.telefone}</span>
-        </div>
-        <div style={styles.infoRow}>
-          <span style={styles.label}>Tipo:</span>
-          <span>{fornecedorSelecionado?.tipo}</span>
-        </div>
-
-        <div style={styles.modalButtons}>
-          <Button
-            onClick={() => {
-              navigate(`/supplieredit/${fornecedorSelecionado.id}`);
-              setFornecedorSelecionado(null);
-            }}
-          >
-            Editar
-          </Button>
-
-          <Button
-            variant="danger"
-            loading={loadingExcluir}
-            disabled={loadingExcluir}
-            onClick={() => excluirFornecedor(fornecedorSelecionado.id)}
-          >
-            Excluir
-          </Button>
-
-        
-        </div>
-      </Modal>
+  isOpen={!!fornecedorSelecionado}
+  onClose={() => setFornecedorSelecionado(null)}
+  title={fornecedorSelecionado?.nomeFantasia || fornecedorSelecionado?.razaoSocial}
+  onEdit={() => {
+    navigate(`/editSupplier/${fornecedorSelecionado.id}`);
+    setFornecedorSelecionado(null);
+  }}
+  onDelete={() => excluirFornecedor(fornecedorSelecionado.id)}
+>
+  {/* só mostra os dados, sem botões aqui */}
+  <div style={styles.infoRow}>
+    <span style={styles.label}>Razão Social:</span>
+    <span>{fornecedorSelecionado?.razaoSocial}</span>
+  </div>
+  <div style={styles.infoRow}>
+    <span style={styles.label}>Nome Fantasia:</span>
+    <span>{fornecedorSelecionado?.nomeFantasia}</span>
+  </div>
+  <div style={styles.infoRow}>
+    <span style={styles.label}>CNPJ:</span>
+    <span>{fornecedorSelecionado?.cnpj}</span>
+  </div>
+  <div style={styles.infoRow}>
+    <span style={styles.label}>Endereço:</span>
+    <span>{fornecedorSelecionado?.endereco}</span>
+  </div>
+  <div style={styles.infoRow}>
+    <span style={styles.label}>Telefone:</span>
+    <span>{fornecedorSelecionado?.telefone}</span>
+  </div>
+  <div style={styles.infoRow}>
+    <span style={styles.label}>Tipo:</span>
+    <span>{fornecedorSelecionado?.tipo}</span>
+  </div>
+</Modal>
     </div>
   );
 }

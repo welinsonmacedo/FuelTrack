@@ -1,0 +1,283 @@
+/* Reset básico */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #ecf0f1;
+}
+
+/* Container geral */
+.container {
+  padding: 20px;
+  min-height: 100%;
+  width: 100%;
+}
+
+/* Formulário */
+.form {
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-evenly;
+  gap: 10px;
+  max-width: 100%;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.select, .input, .textarea {
+  font-size: 16px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  height: 10vh;
+}
+
+.textarea {
+  
+  resize: vertical;
+  
+}
+
+
+
+.saveBtn {
+  background-color: #27ae60 !important;
+  color: white !important;
+  border: none !important;
+  padding: 12px 20px !important;
+  font-size: 16px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  width: 100%;
+   height: 10vh;
+}
+
+.cancelBtn {
+  background-color: #ccc !important;
+  border: none !important;
+  padding: 12px 20px !important;
+  font-size: 16px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+}
+
+/* Tabela desktop */
+.tableWrapper {
+  overflow-x: hidden;
+  height: 100vh;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.table th, .table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.actionsCell {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Cards mobile */
+.mobile-cards {
+  display: none; /* Esconde por padrão */
+}
+
+.cardContainer {
+  margin-top: 20px;
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  padding: 16px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.cardRow {
+  margin-bottom: 8px;
+}
+
+.cardLabel {
+  font-weight: bold;
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* Botões para os cards, reaproveitando seus variants */
+button {
+  cursor: pointer;
+  border-radius: 6px;
+  border: none;
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+button[variant="warning"], .btn-warning {
+  background-color: #f39c12;
+  color: white;
+}
+
+button[variant="primary"], .btn-primary {
+  background-color: #2980b9;
+  color: white;
+}
+
+button[variant="success"], .btn-success {
+  background-color: #27ae60;
+  color: white;
+}
+
+/*ActionMenu*/
+
+/* Adicione isso no seu style.css ou importe em ActionMenu.jsx */
+
+.action-menu-wrapper {
+  position: relative;
+  display: block;
+  
+}
+
+.menu-trigger {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.menu-trigger:hover {
+  background-color: #f0f0f0;
+}
+
+.action-menu {
+  display: flex;
+  position: absolute;
+  top: 30px;
+  right: 0;
+  background-color: white;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  padding: 6px 0;
+  z-index: 999;
+  min-width: 120px;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.menu-item:hover {
+  background-color: #f5f5f5;
+  color: #111;
+  font-weight: 500;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.status {
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+.status-realizado {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-pendente {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .desktop-table {
+    display: none;
+  }
+  .mobile-cards {
+    display: block;
+  }
+  .form {
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+
+}
+.select, .input, .textarea {
+ 
+  height: 5vh;
+}
+.button{
+  width: 100%;
+}
+.saveBtn {
+
+   height: 5vh;
+}
+.tableWrapper {
+  overflow-x: hidden;
+  height: 0vh;
+}
+
+}

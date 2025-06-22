@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import Card from "../../components/Card";
-import Alert from "../alertsMaintenancePage/AlertsMaintenancePage";
+import AlertsMaintenancePage from "../alertsMaintenancePage/AlertsMaintenancePage";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const [dados, setDados] = useState({
@@ -13,8 +14,13 @@ export default function Dashboard() {
     viagens: 0,
     abastecimentos: 0,
   });
-  const [avisos, setAvisos] = useState([]);
+
+  const navigate = useNavigate();
   const [mesAtual, setMesAtual] = useState(new Date());
+
+  function abrirManutencoes() {
+    navigate("/maintenance"); // ajuste a rota conforme seu app
+  }
 
   const formatarMesAno = (data) =>
     data.toLocaleString("pt-BR", { month: "long", year: "numeric" });
@@ -36,7 +42,7 @@ export default function Dashboard() {
         ...doc.data(),
       }));
 
-      // Filtra viagens em andamento (dataAtual entre dataInicio e dataFim)
+      // Filtra viagens em andamento
       const viagensEmAndamento = viagens.filter((v) => {
         if (!v.dataInicio || !v.dataFim) return false;
 
@@ -50,16 +56,6 @@ export default function Dashboard() {
           console.log("Erro na conversão da data", v.dataInicio, v.dataFim);
           return false;
         }
-
-        console.log(
-          "Viagem",
-          v.id,
-          "dataInicio",
-          dataInicio,
-          "dataFim",
-          dataFim
-        );
-
         return hoje >= dataInicio && hoje <= dataFim;
       });
 
@@ -94,31 +90,13 @@ export default function Dashboard() {
       const veiculosDisponiveis = veiculos.filter(
         (v) => !veiculosEmViagemIds.includes(v.id)
       );
+
       // Filtro por mês (viagens e abastecimentos)
-      const inicioMes = new Date(
-        mesAtual.getFullYear(),
-        mesAtual.getMonth(),
-        1
-      );
-      const fimMes = new Date(
-        mesAtual.getFullYear(),
-        mesAtual.getMonth() + 1,
-        0
-      );
-      console.log("Motoristas em viagem:", motoristasEmViagemIds);
-      console.log("Veículos em viagem:", veiculosEmViagemIds);
-      console.log(
-        "Motoristas disponíveis:",
-        motoristasDisponiveis.map((m) => m.id)
-      );
-      console.log(
-        "Veículos disponíveis:",
-        veiculosDisponiveis.map((v) => v.id)
-      );
+      const inicioMes = new Date(mesAtual.getFullYear(), mesAtual.getMonth(), 1);
+      const fimMes = new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1, 0);
 
       const viagensMes = viagens.filter((v) => {
         if (!v.dataInicio) return false;
-
         let dataInicio;
         try {
           dataInicio = v.dataInicio.toDate
@@ -127,13 +105,10 @@ export default function Dashboard() {
         } catch {
           return false;
         }
-
         return dataInicio >= inicioMes && dataInicio <= fimMes;
       });
 
-      const abastecimentosSnap = await getDocs(
-        collection(db, "abastecimentos")
-      );
+      const abastecimentosSnap = await getDocs(collection(db, "abastecimentos"));
       const abastecimentos = abastecimentosSnap.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -141,14 +116,12 @@ export default function Dashboard() {
 
       const abastecimentosMes = abastecimentos.filter((a) => {
         if (!a.data) return false;
-
         let data;
         try {
           data = a.data.toDate ? a.data.toDate() : new Date(a.data);
         } catch {
           return false;
         }
-
         return data >= inicioMes && data <= fimMes;
       });
 
@@ -162,14 +135,7 @@ export default function Dashboard() {
       });
     }
 
-    async function fetchAvisos() {
-      const snapshot = await getDocs(collection(db, "avisos"));
-      const lista = snapshot.docs.map((doc) => doc.data());
-      setAvisos(lista);
-    }
-
     fetchData();
-    fetchAvisos();
   }, [mesAtual]);
 
   return (
@@ -212,16 +178,7 @@ export default function Dashboard() {
         </div>
 
         <div style={styles.alertSection}>
-          <h2>Avisos de Manutenção</h2>
-          {avisos.length === 0 ? (
-            <p>Nenhum aviso disponível.</p>
-          ) : (
-            avisos.map((aviso, index) => (
-              <Alert key={index} variant={aviso.tipo || "warning"}>
-                {aviso.mensagem}
-              </Alert>
-            ))
-          )}
+          <AlertsMaintenancePage onAlertaClick={abrirManutencoes} isDashboard />
         </div>
       </main>
     </div>
@@ -235,7 +192,6 @@ const styles = {
     justifyContent: "center",
     backgroundColor: "#f4f6f8",
     minHeight: "100vh",
-   
   },
   main: {
     width: "100%",
@@ -249,14 +205,13 @@ const styles = {
     color: "#2c3e50",
   },
   headerBox: {
-  display: "flex",
-  justifyContent: "center", // ⬅️ centraliza horizontalmente
-  alignItems: "center",
-  flexWrap: "wrap",
-  marginBottom: "30px",
-  gap: "20px",
-},
-
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flexWrap: "wrap",
+    marginBottom: "30px",
+    gap: "20px",
+  },
   mesControle: {
     display: "flex",
     alignItems: "center",

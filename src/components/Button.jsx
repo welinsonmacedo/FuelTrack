@@ -13,36 +13,86 @@ export default function Button({
   const [hover, setHover] = useState(false);
 
   const colors = {
-    primary: {
-      default: "#3498db",
-      hover: "#75ee99",
-      color: "white",
-      disabledBg: "#a0c4e3",
-      disabledColor: "#eee",
-    },
-    danger: {
-      default: "#e74c3c",
-      hover: "#464432",
-      color: "white",
-      disabledBg: "#e6a0a0",
-      disabledColor: "#eee",
-    },
-    cancel: {
-      default: "#7f8c8d",
-      hover: "#606c70",
-      color: "white",
-      disabledBg: "#b0b6b8",
-      disabledColor: "#eee",
-    },
-     cloose: {
-      default: "#aa9904",
-      hover: "#606c70",
-      color: "white",
-      disabledBg: "#b0b6b8",
-      disabledColor: "#eee",
-    },
+  primary: {
+    default: "#3498db",
+    hover: "#75ee99",
+    color: "white",
+    disabledBg: "#a0c4e3",
+    disabledColor: "#eee",
+  },
+  danger: {
+    default: "#e74c3c",
+    hover: "#464432",
+    color: "white",
+    disabledBg: "#e6a0a0",
+    disabledColor: "#eee",
+  },
+  cancel: {
+    default: "#7f8c8d",
+    hover: "#606c70",
+    color: "white",
+    disabledBg: "#b0b6b8",
+    disabledColor: "#eee",
+  },
+  cloose: {
+    default: "#aa9904",
+    hover: "#606c70",
+    color: "white",
+    disabledBg: "#b0b6b8",
+    disabledColor: "#eee",
+  },
+  
+  success: {
+    default: "#27ae60",
+    hover: "#219150",
+    color: "white",
+    disabledBg: "#9bd5b8",
+    disabledColor: "#eee",
+  },
+  
+  warning: {
+    default: "#f39c12",
+    hover: "#d78c0a",
+    color: "white",
+    disabledBg: "#f6d6a0",
+    disabledColor: "#eee",
+  },
+  
+  info: {
+    default: "#2980b9",
+    hover: "#1f5d8a",
+    color: "white",
+    disabledBg: "#8eb7db",
+    disabledColor: "#eee",
+  },
 
-  };
+  secondary: {
+    default: "#95a5a6",
+    hover: "#7f8c8d",
+    color: "white",
+    disabledBg: "#c2c7c8",
+    disabledColor: "#eee",
+  },
+
+  dark: {
+    default: "#2c3e50",
+    hover: "#1a242f",
+    color: "white",
+    disabledBg: "#7f8c8d",
+    disabledColor: "#eee",
+  },
+
+  light: {
+    default: "#ecf0f1",
+    hover: "#d0d7db",
+    color: "#2c3e50",
+    disabledBg: "#f7f9fa",
+    disabledColor: "#999",
+  },
+};
+
+
+
 
   const sizes = {
     small: {

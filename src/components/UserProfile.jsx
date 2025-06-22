@@ -4,6 +4,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../services/firebase";
 import { useTheme } from "../contexts/ThemeContext";
 import "./UserProfile.css";
+import CompanyInfo from "./CompanyInfo";
 
 export default function UserProfile() {
   const [user, setUser] = useState(null);
@@ -53,7 +54,6 @@ export default function UserProfile() {
   return (
     <div className={`user-profile ${darkMode ? "dark" : "light"}`}>
       <div className="profile-card" role="region" aria-label="Perfil do usuário">
-        <h2 className="profile-title">Perfil do Usuário</h2>
         <div className="profile-info">
           <p>
             <strong>Nome:</strong> {userData?.nome || "Não informado"}
@@ -76,6 +76,8 @@ export default function UserProfile() {
           </button>
         </div>
       </div>
+
+      <CompanyInfo />
     </div>
   );
 }

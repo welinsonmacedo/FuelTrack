@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { useNavigate } from "react-router-dom";
-import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 import ListItem from "../../components/ListItem";
 import { useUI } from "../../contexts/UIContext";
@@ -11,7 +10,7 @@ export default function Vehicles() {
   const [veiculos, setVeiculos] = useState([]);
   const [selectedVeiculo, setSelectedVeiculo] = useState(null);
   const [busca, setBusca] = useState("");
-  const [loadingExcluir, setLoadingExcluir] = useState(false);
+
   const navigate = useNavigate();
   const { showAlert } = useUI();
 
@@ -27,7 +26,7 @@ export default function Vehicles() {
   const handleExcluir = async (id) => {
     if (window.confirm("Tem certeza que deseja excluir este veículo?")) {
       try {
-        setLoadingExcluir(true);
+  
         await deleteDoc(doc(db, "veiculos", id));
         setSelectedVeiculo(null);
         showAlert("Veículo excluído com sucesso!", "success");
@@ -35,9 +34,7 @@ export default function Vehicles() {
       } catch (error) {
         showAlert("Erro ao excluir veículo.", "error");
         console.error(error);
-      } finally {
-        setLoadingExcluir(false);
-      }
+      }  
     }
   };
 
@@ -60,9 +57,9 @@ export default function Vehicles() {
           onChange={(e) => setBusca(e.target.value)}
           style={styles.search}
         />
-        <Button onClick={() => navigate("/truckregister")}>
+        <button onClick={() => navigate("/truckregister")}>
           Cadastrar Veículo
-        </Button>
+        </button>
       </div>
 
       <ul style={styles.list}>
@@ -84,7 +81,12 @@ export default function Vehicles() {
       <Modal
         isOpen={!!selectedVeiculo}
         onClose={() => setSelectedVeiculo(null)}
-        title={selectedVeiculo?.placa}
+        title={` ${selectedVeiculo?.placa}`}
+        onEdit={() => {
+          navigate(`/truckregister/edit/${selectedVeiculo.id}`);
+          setSelectedVeiculo(null);
+        }}
+        onDelete={() => handleExcluir(selectedVeiculo.id)}
       >
         <div style={styles.infoRow}>
           <span style={styles.label}>Modelo:</span>
@@ -98,26 +100,44 @@ export default function Vehicles() {
           <span style={styles.label}>Ano:</span>
           <span>{selectedVeiculo?.ano}</span>
         </div>
-
-        <div style={styles.modalButtons}>
-          <Button
-            onClick={() => {
-              navigate(`/truckedit/${selectedVeiculo.id}`);
-              setSelectedVeiculo(null);
-            }}
-          >
-            Editar
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => handleExcluir(selectedVeiculo.id)}
-            loading={loadingExcluir}
-            disabled={loadingExcluir}
-          >
-            Excluir
-          </Button>
-          
+        <div style={styles.infoRow}>
+          <span style={styles.label}>Status:</span>
+          <span>{selectedVeiculo?.status}</span>
         </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>Renavam:</span>
+          <span>{selectedVeiculo?.renavam}</span>
+        </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>Chassi:</span>
+          <span>{selectedVeiculo?.chassi}</span>
+        </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>Nº CRLV:</span>
+          <span>{selectedVeiculo?.numeroCRLV}</span>
+        </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>Licenciamento:</span>
+          <span>
+            {selectedVeiculo?.vencimentoLicenciamento
+              ? new Date(selectedVeiculo.vencimentoLicenciamento).toLocaleDateString("pt-BR")
+              : "—"}
+          </span>
+        </div>
+
+        {selectedVeiculo?.documentoUrl && (
+          <div style={styles.infoRow}>
+            <span style={styles.label}>Documento:</span>
+            <a
+              href={selectedVeiculo.documentoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#2980b9", textDecoration: "underline" }}
+            >
+              Visualizar
+            </a>
+          </div>
+        )}
       </Modal>
     </div>
   );
@@ -162,12 +182,5 @@ const styles = {
   label: {
     fontWeight: "bold",
     width: "90px",
-  },
-  modalButtons: {
-    marginTop: "25px",
-    display: "flex",
-    justifyContent: "space-evenly",
-    flexWrap: "wrap",
-    gap: "10px",
   },
 };

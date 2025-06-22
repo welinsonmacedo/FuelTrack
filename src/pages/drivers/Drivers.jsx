@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { useNavigate } from "react-router-dom";
-import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 import ListItem from "../../components/ListItem";
 import { useUI } from "../../contexts/UIContext";
@@ -11,7 +10,7 @@ export default function Drivers() {
   const [motoristas, setMotoristas] = useState([]);
   const [selectedMotorista, setSelectedMotorista] = useState(null);
   const [busca, setBusca] = useState("");
-  const [loadingExcluir, setLoadingExcluir] = useState(false);
+
   const navigate = useNavigate();
   const { showAlert } = useUI();
 
@@ -24,7 +23,7 @@ export default function Drivers() {
   const excluirMotorista = async (id) => {
     if (window.confirm("Tem certeza que deseja excluir este motorista?")) {
       try {
-        setLoadingExcluir(true);
+     
         await deleteDoc(doc(db, "motoristas", id));
         setSelectedMotorista(null);
         showAlert("Motorista excluído com sucesso!", "success");
@@ -32,9 +31,7 @@ export default function Drivers() {
       } catch (error) {
         showAlert("Erro ao excluir motorista.", "error");
         console.error(error);
-      } finally {
-        setLoadingExcluir(false);
-      }
+      } 
     }
   };
 
@@ -57,14 +54,24 @@ export default function Drivers() {
           onChange={(e) => setBusca(e.target.value)}
           style={styles.search}
         />
-        <Button onClick={() => navigate("driverregister")}>Cadastrar Motorista</Button>
+        <button onClick={() => navigate("driverregister")}>Cadastrar Motorista</button>
       </div>
 
       <ul style={styles.list}>
         {motoristasFiltrados.map((moto) => (
           <ListItem
             key={moto.id}
-            icon={moto.foto ? <img src={moto.foto} alt="foto" style={{ width: 30, height: 30, borderRadius: "50%" }} /> : "👤"}
+            icon={
+              moto.foto ? (
+                <img
+                  src={moto.foto}
+                  alt="foto"
+                  style={{ width: 30, height: 30, borderRadius: "50%" }}
+                />
+              ) : (
+                "👤"
+              )
+            }
             text={moto.nome}
             onClick={() => setSelectedMotorista(moto)}
           />
@@ -75,50 +82,74 @@ export default function Drivers() {
         isOpen={!!selectedMotorista}
         onClose={() => setSelectedMotorista(null)}
         title={selectedMotorista?.nome}
+        onEdit={() => {
+          navigate(`driveredit/${selectedMotorista.id}`);
+          setSelectedMotorista(null);
+        }}
+        onDelete={() => excluirMotorista(selectedMotorista.id)}
       >
         {selectedMotorista?.foto && (
           <img
             src={selectedMotorista.foto}
             alt="Foto do Motorista"
-            style={{ width: "100px", maxHeight: "100px", objectFit: "cover", borderRadius: "5px", marginBottom: "15px" }}
+            style={{
+              width: "100px",
+              maxHeight: "100px",
+              objectFit: "cover",
+              borderRadius: "5px",
+              marginBottom: "15px",
+            }}
           />
         )}
 
-        <div style={styles.infoRow}><span style={styles.label}>CPF:</span> <span>{selectedMotorista?.cpf}</span></div>
-        <div style={styles.infoRow}><span style={styles.label}>CNH:</span> <span>{selectedMotorista?.cnh}</span></div>
-        <div style={styles.infoRow}><span style={styles.label}>Categoria:</span> <span>{selectedMotorista?.categoria}</span></div>
-        <div style={styles.infoRow}><span style={styles.label}>Telefone:</span> <span>{selectedMotorista?.telefone}</span></div>
-        <div style={styles.infoRow}><span style={styles.label}>WhatsApp:</span> <span>{selectedMotorista?.whatsapp}</span></div>
-        <div style={styles.infoRow}><span style={styles.label}>Email:</span> <span>{selectedMotorista?.email}</span></div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>CPF:</span> <span>{selectedMotorista?.cpf}</span>
+        </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>CNH:</span> <span>{selectedMotorista?.cnh}</span>
+        </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>Categoria:</span>{" "}
+          <span>{selectedMotorista?.categoria}</span>
+        </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>Telefone:</span>{" "}
+          <span>{selectedMotorista?.telefone}</span>
+        </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>WhatsApp:</span>{" "}
+          <span>{selectedMotorista?.whatsapp}</span>
+        </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>Email:</span> <span>{selectedMotorista?.email}</span>
+        </div>
 
         {selectedMotorista?.endereco && (
           <>
-            <div style={styles.infoRow}><span style={styles.label}>CEP:</span> <span>{selectedMotorista.endereco.cep}</span></div>
-            <div style={styles.infoRow}><span style={styles.label}>Rua:</span> <span>{selectedMotorista.endereco.rua}</span></div>
-            <div style={styles.infoRow}><span style={styles.label}>Número:</span> <span>{selectedMotorista.endereco.numero}</span></div>
-            <div style={styles.infoRow}><span style={styles.label}>Bairro:</span> <span>{selectedMotorista.endereco.bairro}</span></div>
-            <div style={styles.infoRow}><span style={styles.label}>Cidade:</span> <span>{selectedMotorista.endereco.cidade}</span></div>
-            <div style={styles.infoRow}><span style={styles.label}>Estado:</span> <span>{selectedMotorista.endereco.estado}</span></div>
+            <div style={styles.infoRow}>
+              <span style={styles.label}>CEP:</span> <span>{selectedMotorista.endereco.cep}</span>
+            </div>
+            <div style={styles.infoRow}>
+              <span style={styles.label}>Rua:</span> <span>{selectedMotorista.endereco.rua}</span>
+            </div>
+            <div style={styles.infoRow}>
+              <span style={styles.label}>Número:</span>{" "}
+              <span>{selectedMotorista.endereco.numero}</span>
+            </div>
+            <div style={styles.infoRow}>
+              <span style={styles.label}>Bairro:</span>{" "}
+              <span>{selectedMotorista.endereco.bairro}</span>
+            </div>
+            <div style={styles.infoRow}>
+              <span style={styles.label}>Cidade:</span>{" "}
+              <span>{selectedMotorista.endereco.cidade}</span>
+            </div>
+            <div style={styles.infoRow}>
+              <span style={styles.label}>Estado:</span>{" "}
+              <span>{selectedMotorista.endereco.estado}</span>
+            </div>
           </>
         )}
-
-        <div style={styles.modalButtons}>
-          <Button onClick={() => {
-            navigate(`driveredit/${selectedMotorista.id}`);
-            setSelectedMotorista(null);
-          }}>Editar</Button>
-
-          <Button
-            variant="danger"
-            loading={loadingExcluir}
-            disabled={loadingExcluir}
-            onClick={() => excluirMotorista(selectedMotorista.id)}
-          >
-            Excluir
-          </Button>
-
-         
-        </div>
       </Modal>
     </div>
   );
@@ -163,12 +194,5 @@ const styles = {
   label: {
     fontWeight: "bold",
     width: "90px",
-  },
-  modalButtons: {
-    marginTop: "25px",
-    display: "flex",
-    justifyContent: "space-evenly",
-    flexWrap: "wrap",
-    gap: "10px",
   },
 };

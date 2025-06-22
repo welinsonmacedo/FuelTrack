@@ -410,7 +410,7 @@ const styles = {
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fcfcfc",
     borderRadius: 8,
     overflow: "hidden",
     boxShadow: "0 0 12px rgba(0,0,0,0.3)",
@@ -448,7 +448,7 @@ const styles = {
     maxHeight: "90vh",
     overflowY: "auto",
     boxShadow: "0 0 20px rgba(0,0,0,0.5)",
-    color: "#f0f0f0",
+    color: "#000000",
   },
   btnClose: {
     padding: "10px 20px",

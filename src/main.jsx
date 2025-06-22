@@ -5,10 +5,12 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./services/AuthContext";
 import { UIProvider } from "./contexts/UIContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { UserProvider } from "./contexts/UserContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <ThemeProvider>
+    <UserProvider>
+<ThemeProvider>
       <UIProvider>
         <AuthProvider>
           <BrowserRouter>
@@ -17,5 +19,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         </AuthProvider>
       </UIProvider>
     </ThemeProvider>
+    </UserProvider>
+    
   </React.StrictMode>
 );

@@ -1,14 +1,14 @@
 // src/pages/UserRegister.jsx
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { collection, doc, setDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
 
 export default function UserRegister() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [tipo, setTipo] = useState("padrao");
+  const [tipo, setTipo] = useState("padrao"); // valor padrão 'padrao'
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
 
@@ -18,10 +18,12 @@ export default function UserRegister() {
     setErro("");
 
     try {
+      // Cria o usuário no Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
       const userId = userCredential.user.uid;
 
-      await setDoc(doc(collection(db, "usuarios"), userId), {
+      // Cria o documento no Firestore com dados do usuário, incluindo o tipo
+      await setDoc(doc(db, "usuarios", userId), {
         nome,
         email,
         tipo,
@@ -42,7 +44,7 @@ export default function UserRegister() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2>Cadastrar Novo Usuário</h2>
+        <h2>Novo Usuário</h2>
         <form onSubmit={handleSubmit} style={styles.form}>
           <input
             type="text"
@@ -68,11 +70,19 @@ export default function UserRegister() {
             required
             style={styles.input}
           />
-          <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={styles.input}>
+          <select
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value)}
+            style={styles.input}
+            required
+          >
             <option value="padrao">Usuário Padrão</option>
             <option value="admin">Administrador</option>
+            <option value="motorista">Motorista</option>
           </select>
-          <button type="submit" style={styles.button}>Cadastrar Usuário</button>
+          <button type="submit" style={styles.button}>
+            Cadastrar Usuário
+          </button>
 
           {mensagem && <p style={{ color: "green", marginTop: 10 }}>{mensagem}</p>}
           {erro && <p style={{ color: "red", marginTop: 10 }}>{erro}</p>}

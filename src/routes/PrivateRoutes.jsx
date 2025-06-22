@@ -31,6 +31,9 @@ import MaintenancePage from "../pages/maintenancePage/MaintenancePage";
 import AlertsMaintenancePage from "../pages/alertsMaintenancePage/AlertsMaintenancePage";
 import UserProfile from "../components/UserProfile";
 import VehicleChecklistComplete from "../pages/vehicleChecklist/VehicleChecklist";
+import CompanyRegistration from "../pages/companyRegistration/CompanyRegistration";
+import AdminUserRoleManager from "../pages/adminUser/AdminUserRoleManager";
+import DriverDashboard from "../driver/DriverDashboard";
 
 const privateRoutes = (
   <>
@@ -330,6 +333,36 @@ const privateRoutes = (
         <PrivateRoute>
           <Layout>
             <VehicleChecklistComplete/>
+          </Layout>
+        </PrivateRoute>
+      }
+    />
+    <Route
+      path="/companyregistration"
+      element={
+        <PrivateRoute>
+          <Layout>
+            <CompanyRegistration/>
+          </Layout>
+        </PrivateRoute>
+      }
+    />
+     <Route
+      path="/adminusermanager"
+      element={
+        <PrivateRoute>
+          <Layout>
+            <AdminUserRoleManager/>
+          </Layout>
+        </PrivateRoute>
+      }
+    />
+     <Route
+      path="/driverdashboard"
+      element={
+        <PrivateRoute>
+          <Layout>
+            <DriverDashboard/>
           </Layout>
         </PrivateRoute>
       }

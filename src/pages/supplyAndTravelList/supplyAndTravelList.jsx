@@ -55,8 +55,10 @@ export default function AbastecimentosList() {
       let q = collection(db, "abastecimentos");
       const constraints = [];
 
-      if (filtroMotorista) constraints.push(where("motorista", "==", filtroMotorista));
-      if (filtroCaminhao) constraints.push(where("caminhao", "==", filtroCaminhao));
+      if (filtroMotorista)
+        constraints.push(where("motorista", "==", filtroMotorista));
+      if (filtroCaminhao)
+        constraints.push(where("caminhao", "==", filtroCaminhao));
 
       if (filtroDataInicio) {
         const dtInicio = new Date(filtroDataInicio);
@@ -190,7 +192,11 @@ export default function AbastecimentosList() {
                   onClick={() => abrirModal(a)}
                 >
                   <td>{nomeMotorista(a.motorista)}</td>
-                  <td>{new Date(a.dataHora).toLocaleDateString("pt-BR")}</td>
+                  <td>
+                    {a.dataHora && typeof a.dataHora.toDate === "function"
+                      ? a.dataHora.toDate().toLocaleDateString("pt-BR")
+                      : new Date(a.dataHora).toLocaleDateString("pt-BR")}
+                  </td>
                 </tr>
               ))
             )}
@@ -212,7 +218,14 @@ export default function AbastecimentosList() {
             </p>
             <p>
               <strong>Data e Hora:</strong>{" "}
-              {new Date(selectedAbastecimento.dataHora).toLocaleString("pt-BR")}
+              {selectedAbastecimento.dataHora &&
+              typeof selectedAbastecimento.dataHora.toDate === "function"
+                ? selectedAbastecimento.dataHora
+                    .toDate()
+                    .toLocaleString("pt-BR")
+                : new Date(selectedAbastecimento.dataHora).toLocaleString(
+                    "pt-BR"
+                  )}
             </p>
             <p>
               <strong>KM:</strong> {selectedAbastecimento.kmAbastecimento}
@@ -227,7 +240,9 @@ export default function AbastecimentosList() {
 
             <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
               <button
-                onClick={() => navigate(`/editFuelRegister/${selectedAbastecimento.id}`)}
+                onClick={() =>
+                  navigate(`/editFuelRegister/${selectedAbastecimento.id}`)
+                }
                 style={styles.button}
               >
                 Editar
@@ -251,73 +266,87 @@ export default function AbastecimentosList() {
 
 const styles = {
   container: {
-    padding: "20px",
-    fontFamily: "Arial, sans-serif",
-    maxWidth: "900px",
-    margin: "0 auto",
+    maxWidth: "1080px",
+    margin: "30px auto",
+    padding: "0 20px",
+    fontFamily: "'Segoe UI', sans-serif",
+    color: "#000000",
   },
   title: {
-    marginBottom: "15px",
-    color: "#2c3e50",
-    fontSize: "20px",
+    fontSize: 28,
+    marginBottom: 24,
+    fontWeight: 600,
+    color: "#00BCD4",
   },
   filters: {
     display: "flex",
-    gap: "10px",
-    marginBottom: "15px",
+    gap: 15,
+    marginBottom: 24,
     flexWrap: "wrap",
   },
   select: {
-    flex: "1 1 150px",
-    padding: "8px",
-    fontSize: "16px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
+    flex: "1 1 180px",
+    padding: "10px",
+    fontSize: 16,
+    borderRadius: 8,
+    border: "1px solid #555",
+    backgroundColor: "#ffffff",
+    color: "#000000",
   },
   inputDate: {
-    flex: "1 1 150px",
-    padding: "8px",
-    fontSize: "16px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
+    flex: "1 1 180px",
+    padding: "10px",
+    fontSize: 16,
+    borderRadius: 8,
+    border: "1px solid #555",
+    backgroundColor: "#ffffff",
+    color: "#000000",
   },
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    textAlign: "left",
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    overflow: "hidden",
+    boxShadow: "0 0 12px rgba(0,0,0,0.3)",
+    textAlign: "center",
   },
   tableTitle: {
-    backgroundColor: "#4a5f7e",
-    color: "#fff",
+    backgroundColor: "#00BCD4",
+    color: "white",
+    fontWeight: "600",
   },
   modalOverlay: {
     position: "fixed",
     top: 0,
     left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(255, 255, 255, 0.6)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 1000,
+    zIndex: 9999,
   },
   modalContent: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 8,
-    minWidth: 300,
-    maxWidth: 500,
-    boxShadow: "0 2px 8px rgba(0,0,0,0.26)",
-    display: "flex",
-    flexDirection: "column",
+    backgroundColor: "#ffffff",
+    padding: 25,
+    borderRadius: 10,
+    maxWidth: 700,
+    width: "90%",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    boxShadow: "0 0 20px rgba(0,0,0,0.5)",
+    color: "#000000",
   },
   button: {
-    padding: "8px 12px",
-    borderRadius: 5,
-    border: "none",
+    padding: "10px 20px",
+    fontSize: 16,
     cursor: "pointer",
-    backgroundColor: "#3498db",
+    borderRadius: 6,
+    border: "none",
+    backgroundColor: "#00BCD4",
     color: "white",
+    transition: "background 0.3s",
   },
 };

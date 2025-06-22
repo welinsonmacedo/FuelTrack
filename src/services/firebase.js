@@ -1,9 +1,9 @@
-// src/services/firebase.js
+
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-// 🔁 Substitua pelos seus dados do Firebase
+
 const firebaseConfig = {
     apiKey: "AIzaSyCHRvBAY3PvN9P_QQJA6XUEEAEwVUWQogE",
     authDomain: "fueltrackpro-a4856.firebaseapp.com",

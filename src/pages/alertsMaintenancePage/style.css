@@ -1,0 +1,103 @@
+/* Container geral */
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 40px 24px;
+  font-family: 'Inter', sans-serif;
+  background-color: #ebebeb;
+  color: #1e293b;
+  min-height: 100vh;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 10vh;
+  text-align: center;
+  color: #334155;
+}
+
+.noAlerts {
+  font-size: 18px;
+  color: #64748b;
+  text-align: center;
+  margin-top: 40px;
+}
+
+/* Grid de alertas - mobile empilha vertical */
+.alertsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  justify-content: center;
+}
+
+/* Card estilo mobile */
+.card {
+
+  box-shadow: 0 8px 24px rgba(36, 33, 33, 0.07);
+  border-radius: 5px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.card:hover{
+    background-color: #ebffeb;
+}
+.cardHeader {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+
+ 
+}
+
+.cardText {
+  font-size: 16px;
+  color: #475569;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.dangerText {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Estilo desktop - cards inline, simples, sem fundo/sombra/padding */
+
+  @media (max-width: 768px) {
+ 
+  .card {
+    display:flex ;
+    flex-direction: column;
+    justify-content: left;
+    text-align: left;
+  }
+p{
+   text-align: left;
+}
+  }
+
+
+
+.container.compacto {
+  font-size: 14px;
+  padding: 20px 16px;
+}
+
+.container.compacto .title {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.container.compacto .cardHeader {
+  font-size: 16px;
+}
+
+.container.compacto .cardText {
+  font-size: 14px;
+}
