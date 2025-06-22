@@ -22,6 +22,7 @@ export default function Layout({ children }) {
       <main
         style={{
           flexGrow: 1,
+          marginTop:"10vh",
           padding: "10px",
           backgroundColor: "#ecf0f1",
           overflowY: "auto",

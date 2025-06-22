@@ -2,11 +2,18 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { useNavigate } from "react-router-dom";
+import Button from "../../components/Button";
+import Modal from "../../components/Modal";
+import ListItem from "../../components/ListItem";
+import { useUI } from "../../contexts/UIContext";
 
 export default function Suppliers() {
   const [fornecedores, setFornecedores] = useState([]);
   const [fornecedorSelecionado, setFornecedorSelecionado] = useState(null);
+  const [busca, setBusca] = useState("");
+  const [loadingExcluir, setLoadingExcluir] = useState(false);
   const navigate = useNavigate();
+  const { showAlert } = useUI();
 
   const fetchFornecedores = async () => {
     const querySnapshot = await getDocs(collection(db, "fornecedores"));
@@ -16,9 +23,18 @@ export default function Suppliers() {
 
   const excluirFornecedor = async (id) => {
     if (window.confirm("Tem certeza que deseja excluir este fornecedor?")) {
-      await deleteDoc(doc(db, "fornecedores", id));
-      setFornecedorSelecionado(null);
-      fetchFornecedores();
+      try {
+        setLoadingExcluir(true);
+        await deleteDoc(doc(db, "fornecedores", id));
+        setFornecedorSelecionado(null);
+        showAlert("Fornecedor excluído com sucesso!", "success");
+        fetchFornecedores();
+      } catch (error) {
+        showAlert("Erro ao excluir fornecedor.", "error");
+        console.error(error);
+      } finally {
+        setLoadingExcluir(false);
+      }
     }
   };
 
@@ -26,93 +42,92 @@ export default function Suppliers() {
     fetchFornecedores();
   }, []);
 
+  const fornecedoresFiltrados = fornecedores.filter((f) =>
+    (f.nomeFantasia || f.razaoSocial || "").toLowerCase().includes(busca.toLowerCase())
+  );
+
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Lista de Fornecedores</h1>
-      <button style={styles.button} onClick={() => navigate("supplierRegister")}>
-        Cadastrar Fornecedor
-      </button>
+      <div style={styles.header}>
+        <h1 style={styles.title}>Fornecedores</h1>
+        <input
+          type="text"
+          placeholder="Buscar fornecedor..."
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          style={styles.search}
+        />
+        <Button onClick={() => navigate("/supplierregister")}>Cadastrar Fornecedor</Button>
+      </div>
 
       <ul style={styles.list}>
-        {fornecedores.map((f) => (
-          <li
+        {fornecedoresFiltrados.map((f) => (
+          <ListItem
             key={f.id}
-            style={styles.listItem}
+            icon="🏢"
+            text={f.nomeFantasia || f.razaoSocial}
             onClick={() => setFornecedorSelecionado(f)}
-          >
-            {f.nomeFantasia || f.razaoSocial}
-          </li>
+          />
         ))}
+        {fornecedoresFiltrados.length === 0 && (
+          <li style={{ textAlign: "center", padding: "20px", color: "#666" }}>
+            Nenhum fornecedor encontrado.
+          </li>
+        )}
       </ul>
 
-      {fornecedorSelecionado && (
-        <div
-          style={styles.modalOverlay}
-          onClick={() => setFornecedorSelecionado(null)}
-        >
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ marginBottom: "20px" }}>
-              {fornecedorSelecionado.nomeFantasia || fornecedorSelecionado.razaoSocial}
-            </h2>
-
-            <div style={styles.infoRow}>
-              <span style={styles.label}>Razão Social:</span>
-              <span>{fornecedorSelecionado.razaoSocial}</span>
-            </div>
-
-            <div style={styles.infoRow}>
-              <span style={styles.label}>Nome Fantasia:</span>
-              <span>{fornecedorSelecionado.nomeFantasia}</span>
-            </div>
-
-            <div style={styles.infoRow}>
-              <span style={styles.label}>CNPJ:</span>
-              <span>{fornecedorSelecionado.cnpj}</span>
-            </div>
-
-            <div style={styles.infoRow}>
-              <span style={styles.label}>Endereço:</span>
-              <span>{fornecedorSelecionado.endereco}</span>
-            </div>
-
-            <div style={styles.infoRow}>
-              <span style={styles.label}>Telefone:</span>
-              <span>{fornecedorSelecionado.telefone}</span>
-            </div>
-
-            <div style={styles.infoRow}>
-              <span style={styles.label}>Tipo:</span>
-              <span>{fornecedorSelecionado.tipo}</span>
-            </div>
-
-            <div style={styles.modalButtons}>
-              <button
-                style={styles.button}
-                onClick={() => {
-                  navigate(`/editSupplier/${fornecedorSelecionado.id}`);
-                  setFornecedorSelecionado(null);
-                }}
-              >
-                Editar
-              </button>
-
-              <button
-                style={styles.delete}
-                onClick={() => excluirFornecedor(fornecedorSelecionado.id)}
-              >
-                Excluir
-              </button>
-
-              <button
-                style={styles.cancel}
-                onClick={() => setFornecedorSelecionado(null)}
-              >
-                Fechar
-              </button>
-            </div>
-          </div>
+      <Modal
+        isOpen={!!fornecedorSelecionado}
+        onClose={() => setFornecedorSelecionado(null)}
+        title={fornecedorSelecionado?.nomeFantasia || fornecedorSelecionado?.razaoSocial}
+      >
+        <div style={styles.infoRow}>
+          <span style={styles.label}>Razão Social:</span>
+          <span>{fornecedorSelecionado?.razaoSocial}</span>
         </div>
-      )}
+        <div style={styles.infoRow}>
+          <span style={styles.label}>Nome Fantasia:</span>
+          <span>{fornecedorSelecionado?.nomeFantasia}</span>
+        </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>CNPJ:</span>
+          <span>{fornecedorSelecionado?.cnpj}</span>
+        </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>Endereço:</span>
+          <span>{fornecedorSelecionado?.endereco}</span>
+        </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>Telefone:</span>
+          <span>{fornecedorSelecionado?.telefone}</span>
+        </div>
+        <div style={styles.infoRow}>
+          <span style={styles.label}>Tipo:</span>
+          <span>{fornecedorSelecionado?.tipo}</span>
+        </div>
+
+        <div style={styles.modalButtons}>
+          <Button
+            onClick={() => {
+              navigate(`/supplieredit/${fornecedorSelecionado.id}`);
+              setFornecedorSelecionado(null);
+            }}
+          >
+            Editar
+          </Button>
+
+          <Button
+            variant="danger"
+            loading={loadingExcluir}
+            disabled={loadingExcluir}
+            onClick={() => excluirFornecedor(fornecedorSelecionado.id)}
+          >
+            Excluir
+          </Button>
+
+        
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -124,87 +139,35 @@ const styles = {
     height: "100vh",
     overflowY: "auto",
   },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    gap: "1rem",
+    marginBottom: "20px",
+    flexWrap: "wrap",
+  },
   title: {
     fontSize: "24px",
-    marginBottom: "20px",
     color: "#2c3e50",
   },
-  button: {
-    flex: 1,
-    backgroundColor: "#3498db",
-    color: "white",
-    border: "none",
-    padding: "10px",
+  search: {
+    padding: "8px",
     borderRadius: "5px",
-    cursor: "pointer",
-    marginRight: "10px",
-    fontWeight: "bold",
-    fontSize: "14px",
-    transition: "background-color 0.2s",
-  },
-  delete: {
+    border: "1px solid #ccc",
     flex: 1,
-    backgroundColor: "#e74c3c",
-    color: "white",
-    border: "none",
-    padding: "10px 0",
-    borderRadius: "5px",
-    cursor: "pointer",
-    marginRight: "10px",
-    fontWeight: "bold",
-    fontSize: "14px",
-    transition: "background-color 0.2s",
-  },
-  cancel: {
-    flex: 1,
-    backgroundColor: "#7f8c8d",
-    color: "white",
-    border: "none",
-    padding: "10px 0",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontWeight: "bold",
-    fontSize: "14px",
-    transition: "background-color 0.2s",
+    minWidth: "200px",
   },
   list: {
     listStyle: "none",
     padding: 0,
-    maxWidth: "400px",
-  },
-  listItem: {
-    backgroundColor: "white",
-    padding: "10px 15px",
-    marginBottom: "8px",
-    borderRadius: "5px",
-    cursor: "pointer",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-  },
-  modalOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100vw",
-    height: "100vh",
-    backgroundColor: "rgba(0,0,0,0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 999,
-  },
-  modal: {
-    backgroundColor: "white",
-    padding: "30px",
-    borderRadius: "8px",
-    maxWidth: "400px",
-    width: "90%",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+    maxWidth: "500px",
   },
   infoRow: {
     display: "flex",
     justifyContent: "flex-start",
     alignItems: "center",
     marginBottom: "10px",
+    fontSize: "14px",
   },
   label: {
     fontWeight: "bold",
@@ -213,6 +176,8 @@ const styles = {
   modalButtons: {
     marginTop: "25px",
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent: "space-evenly",
+    flexWrap: "wrap",
+    gap: "10px",
   },
 };

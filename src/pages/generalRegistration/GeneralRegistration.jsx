@@ -6,116 +6,197 @@ export default function GeneralRegistration() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const navegarPara = (rota) => {
-    navigate(rota);
-  };
-
-  const layoutStyles = isMobile
-    ? { ...styles.painel, flexDirection: "column", display: "flex", gap: "20px" }
-    : styles.painel;
+  const navigateTo = (path) => navigate(path);
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.titulo}>Painel de Cadastros e Manutenção</h1>
+    <main style={styles.container}>
+      <h1 style={styles.header}>Painel Gestor</h1>
 
-      <div style={layoutStyles}>
-        {/* Seção: Cadastros Principais */}
-        <div style={styles.card}>
-          <h2 style={styles.subtitulo}>📋 Cadastros Principais</h2>
-          <div style={styles.botoes}>
-            <Botao texto="Cadastro de Viagens" onClick={() => navegarPara("/travelRegistration")} />
-            <Botao texto="Cadastro de Abastecimentos" onClick={() => navegarPara("/supplyRegistration")} />
-            <Botao texto="Cadastro de Motoristas" onClick={() => navegarPara("/drivers/driverregister")} />
-            <Botao texto="Cadastro de Veículos" onClick={() => navegarPara("/truckregister")} />
-            <Botao texto="Cadastro de Usuários" onClick={() => navegarPara("/userregister")} />
-            <Botao texto="Cadastro de Fornecedores" onClick={() => navegarPara("/supplierRegister")} />
-            <Botao texto="Cadastro de Rotas" onClick={() => navegarPara("/routeregistration")} />
-          </div>
-        </div>
+      <section
+        style={{
+          ...styles.panel,
+          flexDirection: isMobile ? "column" : "row",
+          gap: isMobile ? 28 : 48,
+        }}
+      >
+        <Card title="Cadastros" icon="📋">
+          <Button onClick={() => navigateTo("/travelRegistration")} icon="🛣️">
+            Viagens
+          </Button>
+          <Button onClick={() => navigateTo("/supplyRegistration")} icon="⛽">
+          Abastecimentos
+          </Button>
+          <Button onClick={() => navigateTo("/drivers/driverregister")} icon="👷‍♂️">
+            Motoristas
+          </Button>
+          <Button onClick={() => navigateTo("/truckregister")} icon="🚛">
+           Veículos
+          </Button>
+          <Button onClick={() => navigateTo("/userregister")} icon="👤">
+            Usuários
+          </Button>
+          <Button onClick={() => navigateTo("/supplierRegister")} icon="🏢">
+            Fornecedores
+          </Button>
+          <Button onClick={() => navigateTo("/routeregistration")} icon="🗺️">
+            Rotas
+          </Button>
+        </Card>
 
-        {/* Seção: Manutenção e Odômetro */}
-        <div style={styles.card}>
-          <h2 style={styles.subtitulo}>🛠️ Manutenção e Odômetro</h2>
-          <div style={styles.botoes}>
-            <Botao texto="Tipos de Manutenção" onClick={() => navegarPara("/typesmaintenance")} />
-            <Botao texto="Manutenção" onClick={() => navegarPara("/maintenance")} />
-            <Botao texto="Alertas de Manutenção" onClick={() => navegarPara("/alertsmaintenance")} />
-            <Botao texto="Odômetros" onClick={() => navegarPara("/odometerpage")} />
-          </div>
-        </div>
+        <Card title="Manutenção" icon="🛠️">
+          <Button onClick={() => navigateTo("/typesmaintenance")} icon="⚙️">
+            Tipos de Manutenção
+          </Button>
+          <Button onClick={() => navigateTo("/maintenance")} icon="🔧">
+            Manutenção
+          </Button>
+          <Button onClick={() => navigateTo("/alertsmaintenance")} icon="🚨">
+            Alertas de Manutenção
+          </Button>
+          <Button onClick={() => navigateTo("/odometerpage")} icon="📟">
+            Odômetros
+          </Button>
+        </Card>
 
-        {/* Seção: Utilitários */}
-        <div style={styles.card}>
-          <h2 style={styles.subtitulo}>🔗 Utilitários</h2>
-          <div style={styles.botoes}>
-            <Botao texto="Vincular Abastecimentos" onClick={() => navegarPara("/linkRefuelingTravel")} />
-          </div>
-        </div>
-      </div>
-    </div>
+        <Card title="Utilitários" icon="🔗">
+          <Button onClick={() => navigateTo("/linkRefuelingTravel")} icon="🔄">
+            Vincular Abastecimentos
+          </Button>
+        </Card>
+      </section>
+    </main>
   );
 }
 
-function Botao({ texto, onClick }) {
+function Card({ title, icon, children }) {
   return (
-    <button style={styles.botao} onClick={onClick}>
-      {texto}
+    <section
+      aria-labelledby={`${title.replace(/\s+/g, "").toLowerCase()}-title`}
+      style={styles.card}
+    >
+      <h2 id={`${title.replace(/\s+/g, "").toLowerCase()}-title`} style={styles.cardTitle}>
+        <span aria-hidden="true" style={styles.cardIcon}>
+          {icon}
+        </span>
+        {title}
+      </h2>
+      <div style={styles.buttonsContainer}>{children}</div>
+    </section>
+  );
+}
+
+function Button({ children, onClick, icon }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={styles.button}
+      aria-label={children}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+    >
+      <span style={styles.buttonIcon} aria-hidden="true">
+        {icon}
+      </span>
+      {children}
     </button>
   );
 }
 
 const styles = {
   container: {
-    padding: "40px 20px",
-    backgroundColor: "#ecf0f1",
+    maxWidth: 1280,
+    margin: "0 auto",
+    padding: "56px 32px",
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+    backgroundColor: "#f5f7fa",
     minHeight: "100vh",
+    color: "#1e293b",
   },
-  titulo: {
-    fontSize: "28px",
+  header: {
+    fontSize: 36,
+    fontWeight: 700,
     textAlign: "center",
-    marginBottom: "40px",
-    color: "#2c3e50",
+    marginBottom: 56,
+    letterSpacing: "0.03em",
+    color: "#334155",
   },
-  painel: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr",
-    gap: "30px",
+  panel: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
   card: {
-    backgroundColor: "#fff",
-    padding: "25px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    backgroundColor: "rgba(255, 255, 255, 0.85)",
+    backdropFilter: "blur(14px)",
+    borderRadius: 10,
+    padding: 36,
+    boxShadow:
+      "0 10px 30px rgba(100, 116, 139, 0.12), 0 4px 6px rgba(100, 116, 139, 0.06)",
+    flex: 1,
+    minWidth: 280,
     display: "flex",
     flexDirection: "column",
-    gap: "15px",
+    gap: 28,
+    border: "1px solid #e2e8f0",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    userSelect: "none",
+    cursor: "default",
   },
-  subtitulo: {
-    fontSize: "20px",
-    marginBottom: "10px",
-    color: "#34495e",
+  cardTitle: {
+    fontSize: 22,
+    fontWeight: 700,
+    color: "#0f172a",
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    userSelect: "none",
   },
-  botoes: {
+  cardIcon: {
+    fontSize: 28,
+  },
+  buttonsContainer: {
     display: "flex",
     flexDirection: "column",
-    gap: "10px",
+    gap: 16,
   },
-  botao: {
-    padding: "12px",
-    fontSize: "16px",
-    borderRadius: "8px",
+  button: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "#ffffffa0",
+    color: "#000",
     border: "none",
+    borderRadius: 7,
+    padding: "14px 22px",
+    fontSize: 17,
+    fontWeight: 600,
+    boxShadow:
+      "0 8px 20px rgba(37, 99, 235, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.12)",
     cursor: "pointer",
-    backgroundColor: "#3498db",
-    color: "#fff",
-    transition: "background-color 0.3s",
+    userSelect: "none",
+    transition:
+      "background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease",
+  },
+  buttonIcon: {
+    fontSize: 22,
   },
 };
+
+// Se quiser, adicione o CSS global para o hover/focus:
+// button:hover,
+// button:focus-visible {
+//   background-color: #1d4ed8;
+//   box-shadow: 0 12px 28px rgba(29, 78, 216, 0.5), inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+//   transform: translateY(-2px);
+//   outline: none;
+// }

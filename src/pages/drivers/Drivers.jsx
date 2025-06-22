@@ -2,11 +2,18 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { useNavigate } from "react-router-dom";
+import Button from "../../components/Button";
+import Modal from "../../components/Modal";
+import ListItem from "../../components/ListItem";
+import { useUI } from "../../contexts/UIContext";
 
 export default function Drivers() {
   const [motoristas, setMotoristas] = useState([]);
   const [selectedMotorista, setSelectedMotorista] = useState(null);
+  const [busca, setBusca] = useState("");
+  const [loadingExcluir, setLoadingExcluir] = useState(false);
   const navigate = useNavigate();
+  const { showAlert } = useUI();
 
   const fetchMotoristas = async () => {
     const querySnapshot = await getDocs(collection(db, "motoristas"));
@@ -16,9 +23,18 @@ export default function Drivers() {
 
   const excluirMotorista = async (id) => {
     if (window.confirm("Tem certeza que deseja excluir este motorista?")) {
-      await deleteDoc(doc(db, "motoristas", id));
-      setSelectedMotorista(null);
-      fetchMotoristas();
+      try {
+        setLoadingExcluir(true);
+        await deleteDoc(doc(db, "motoristas", id));
+        setSelectedMotorista(null);
+        showAlert("Motorista excluído com sucesso!", "success");
+        fetchMotoristas();
+      } catch (error) {
+        showAlert("Erro ao excluir motorista.", "error");
+        console.error(error);
+      } finally {
+        setLoadingExcluir(false);
+      }
     }
   };
 
@@ -26,84 +42,84 @@ export default function Drivers() {
     fetchMotoristas();
   }, []);
 
+  const motoristasFiltrados = motoristas.filter((moto) =>
+    moto.nome.toLowerCase().includes(busca.toLowerCase())
+  );
+
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Lista de Motoristas</h1>
-      <button style={styles.button} onClick={() => navigate("driverregister")}>
-        Cadastrar Motorista
-      </button>
+      <div style={styles.header}>
+        <h1 style={styles.title}>Motoristas</h1>
+        <input
+          type="text"
+          placeholder="Buscar motorista..."
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          style={styles.search}
+        />
+        <Button onClick={() => navigate("driverregister")}>Cadastrar Motorista</Button>
+      </div>
 
       <ul style={styles.list}>
-        {motoristas.map((moto) => (
-          <li
+        {motoristasFiltrados.map((moto) => (
+          <ListItem
             key={moto.id}
-            style={styles.listItem}
+            icon={moto.foto ? <img src={moto.foto} alt="foto" style={{ width: 30, height: 30, borderRadius: "50%" }} /> : "👤"}
+            text={moto.nome}
             onClick={() => setSelectedMotorista(moto)}
-          >
-            {moto.nome}
-          </li>
+          />
         ))}
       </ul>
 
-      {selectedMotorista && (
-        <div style={styles.modalOverlay} onClick={() => setSelectedMotorista(null)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ marginBottom: "20px" }}>{selectedMotorista.nome}</h2>
+      <Modal
+        isOpen={!!selectedMotorista}
+        onClose={() => setSelectedMotorista(null)}
+        title={selectedMotorista?.nome}
+      >
+        {selectedMotorista?.foto && (
+          <img
+            src={selectedMotorista.foto}
+            alt="Foto do Motorista"
+            style={{ width: "100px", maxHeight: "100px", objectFit: "cover", borderRadius: "5px", marginBottom: "15px" }}
+          />
+        )}
 
-            {selectedMotorista.foto && (
-              <img
-                src={selectedMotorista.foto}
-                alt="Foto do Motorista"
-                style={{ width: "100px", maxHeight: "100px", objectFit: "cover", borderRadius: "5px", marginBottom: "15px" }}
-              />
-            )}
+        <div style={styles.infoRow}><span style={styles.label}>CPF:</span> <span>{selectedMotorista?.cpf}</span></div>
+        <div style={styles.infoRow}><span style={styles.label}>CNH:</span> <span>{selectedMotorista?.cnh}</span></div>
+        <div style={styles.infoRow}><span style={styles.label}>Categoria:</span> <span>{selectedMotorista?.categoria}</span></div>
+        <div style={styles.infoRow}><span style={styles.label}>Telefone:</span> <span>{selectedMotorista?.telefone}</span></div>
+        <div style={styles.infoRow}><span style={styles.label}>WhatsApp:</span> <span>{selectedMotorista?.whatsapp}</span></div>
+        <div style={styles.infoRow}><span style={styles.label}>Email:</span> <span>{selectedMotorista?.email}</span></div>
 
-            <div style={styles.infoRow}><span style={styles.label}>CPF:</span> <span>{selectedMotorista.cpf}</span></div>
-            <div style={styles.infoRow}><span style={styles.label}>CNH:</span> <span>{selectedMotorista.cnh}</span></div>
-            <div style={styles.infoRow}><span style={styles.label}>Categoria:</span> <span>{selectedMotorista.categoria}</span></div>
-            <div style={styles.infoRow}><span style={styles.label}>Telefone:</span> <span>{selectedMotorista.telefone}</span></div>
-            <div style={styles.infoRow}><span style={styles.label}>WhatsApp:</span> <span>{selectedMotorista.whatsapp}</span></div>
-            <div style={styles.infoRow}><span style={styles.label}>Email:</span> <span>{selectedMotorista.email}</span></div>
+        {selectedMotorista?.endereco && (
+          <>
+            <div style={styles.infoRow}><span style={styles.label}>CEP:</span> <span>{selectedMotorista.endereco.cep}</span></div>
+            <div style={styles.infoRow}><span style={styles.label}>Rua:</span> <span>{selectedMotorista.endereco.rua}</span></div>
+            <div style={styles.infoRow}><span style={styles.label}>Número:</span> <span>{selectedMotorista.endereco.numero}</span></div>
+            <div style={styles.infoRow}><span style={styles.label}>Bairro:</span> <span>{selectedMotorista.endereco.bairro}</span></div>
+            <div style={styles.infoRow}><span style={styles.label}>Cidade:</span> <span>{selectedMotorista.endereco.cidade}</span></div>
+            <div style={styles.infoRow}><span style={styles.label}>Estado:</span> <span>{selectedMotorista.endereco.estado}</span></div>
+          </>
+        )}
 
-            {selectedMotorista.endereco && (
-              <>
-                <div style={styles.infoRow}><span style={styles.label}>CEP:</span> <span>{selectedMotorista.endereco.cep}</span></div>
-                <div style={styles.infoRow}><span style={styles.label}>Rua:</span> <span>{selectedMotorista.endereco.rua}</span></div>
-                <div style={styles.infoRow}><span style={styles.label}>Número:</span> <span>{selectedMotorista.endereco.numero}</span></div>
-                <div style={styles.infoRow}><span style={styles.label}>Bairro:</span> <span>{selectedMotorista.endereco.bairro}</span></div>
-                <div style={styles.infoRow}><span style={styles.label}>Cidade:</span> <span>{selectedMotorista.endereco.cidade}</span></div>
-                <div style={styles.infoRow}><span style={styles.label}>Estado:</span> <span>{selectedMotorista.endereco.estado}</span></div>
-              </>
-            )}
+        <div style={styles.modalButtons}>
+          <Button onClick={() => {
+            navigate(`driveredit/${selectedMotorista.id}`);
+            setSelectedMotorista(null);
+          }}>Editar</Button>
 
-            <div style={styles.modalButtons}>
-              <button
-                style={styles.button}
-                onClick={() => {
-                  navigate(`driveredit/${selectedMotorista.id}`);
-                  setSelectedMotorista(null);
-                }}
-              >
-                Editar
-              </button>
+          <Button
+            variant="danger"
+            loading={loadingExcluir}
+            disabled={loadingExcluir}
+            onClick={() => excluirMotorista(selectedMotorista.id)}
+          >
+            Excluir
+          </Button>
 
-              <button
-                style={styles.delete}
-                onClick={() => excluirMotorista(selectedMotorista.id)}
-              >
-                Excluir
-              </button>
-
-              <button
-                style={styles.cancel}
-                onClick={() => setSelectedMotorista(null)}
-              >
-                Fechar
-              </button>
-            </div>
-          </div>
+         
         </div>
-      )}
+      </Modal>
     </div>
   );
 }
@@ -115,81 +131,28 @@ const styles = {
     height: "100vh",
     overflowY: "auto",
   },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    gap: "1rem",
+    marginBottom: "20px",
+    flexWrap: "wrap",
+  },
   title: {
     fontSize: "24px",
-    marginBottom: "20px",
     color: "#2c3e50",
   },
-  button: {
-    flex: 1,
-    backgroundColor: "#3498db",
-    color: "white",
-    border: "none",
-    padding: "10px ",
+  search: {
+    padding: "8px",
     borderRadius: "5px",
-    cursor: "pointer",
-    marginRight: "10px",
-    fontWeight: "bold",
-    fontSize: "14px",
-    transition: "background-color 0.2s",
-  },
-  delete: {
+    border: "1px solid #ccc",
     flex: 1,
-    backgroundColor: "#e74c3c",
-    color: "white",
-    border: "none",
-    padding: "10px 0",
-    borderRadius: "5px",
-    cursor: "pointer",
-    marginRight: "10px",
-    fontWeight: "bold",
-    fontSize: "14px",
-    transition: "background-color 0.2s",
-  },
-  cancel: {
-    flex: 1,
-    backgroundColor: "#7f8c8d",
-    color: "white",
-    border: "none",
-    padding: "10px 0",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontWeight: "bold",
-    fontSize: "14px",
-    transition: "background-color 0.2s",
+    minWidth: "200px",
   },
   list: {
     listStyle: "none",
     padding: 0,
-    maxWidth: "400px",
-  },
-  listItem: {
-    backgroundColor: "white",
-    padding: "10px 15px",
-    marginBottom: "8px",
-    borderRadius: "5px",
-    cursor: "pointer",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-  },
-  modalOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100vw",
-    height: "100vh",
-    backgroundColor: "rgba(0,0,0,0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 999,
-  },
-  modal: {
-    backgroundColor: "white",
-    padding: "30px",
-    borderRadius: "8px",
-    maxWidth: "400px",
-    width: "90%",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+    maxWidth: "500px",
   },
   infoRow: {
     display: "flex",
@@ -204,6 +167,8 @@ const styles = {
   modalButtons: {
     marginTop: "25px",
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent: "space-evenly",
+    flexWrap: "wrap",
+    gap: "10px",
   },
 };

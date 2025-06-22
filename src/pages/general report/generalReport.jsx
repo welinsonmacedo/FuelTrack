@@ -599,7 +599,7 @@ function nomeFornecedor(id) {
 
   return (
     <div style={styles.pageContainer}>
-      <h1 style={styles.pageTitle}>Sistema Completo de Relatórios - Frota</h1>
+   
 
       <div style={styles.tabsContainer}>
         <button

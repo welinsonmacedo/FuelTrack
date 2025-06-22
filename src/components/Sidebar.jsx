@@ -1,83 +1,54 @@
-import React, { useState, useEffect } from "react";
-import "./Sidebar.css";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../services/firebase";
+import React, { useState } from "react";
+import "./TopDropdownMenu.css";
 
-export default function Sidebar({ aberto, onToggle, onNavigate }) {
+export default function TopNavbar({ onNavigate }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserEmail(user.email);
-      } else {
-        setUserEmail("");
-      }
-    });
-
-    return () => unsubscribe(); // limpa o listener ao desmontar
-  }, []);
 
   const menuItems = [
-   
-    { label: "Motoristas", path: "/drivers" },
-    { label: "Veículos", path: "/vehicles" },
+    { label: "Home", path: "/dashboard" },
+    { label: "Relatórios", path: "/report" },
     { label: "Abastecimentos", path: "/supplyAndTravelList" },
     { label: "Viagens", path: "/tripsList" },
-    { label: "Relatórios", path: "/report" },
+    { label: "Motoristas", path: "/drivers" },
+    { label: "Veículos", path: "/vehicles" },
     { label: "Fornecedores", path: "/suppliersList" },
     { label: "Alertas", path: "/alertsmaintenance" },
     { label: "Gestor", path: "/generalRegistration" },
+    { label: "User", path: "/userprofile" },
     { label: "Logout", path: "/logout" },
   ];
 
-  function handleNavigate(path) {
+  const handleNavigate = (path) => {
     onNavigate(path);
     setIsOpen(false);
-  }
+  };
 
   return (
-    <>
-      <button
-        className="hamburger"
-        onClick={onToggle}
-        aria-label="Toggle menu"
-      >
-        <div
-          className="bar"
-          style={{ transform: isOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }}
-        />
-        <div className="bar" style={{ opacity: isOpen ? 0 : 1 }} />
-        <div
-          className="bar"
-          style={{ transform: isOpen ? "rotate(-45deg) translate(6px, -6px)" : "none" }}
-        />
-      </button>
+    <header className="navbar">
+      <div className="navbar-container">
+        <button
+          className="hamburger"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label="Toggle menu"
+        >
+          <div className={`bar ${isOpen ? "bar1" : ""}`} />
+          <div className={`bar ${isOpen ? "bar2" : ""}`} />
+          <div className={`bar ${isOpen ? "bar3" : ""}`} />
+        </button>
 
-      <aside className={`sidebar ${aberto ? "open" : ""}`}>
-        <h2 className="logo">FuelTrackPro</h2>
-        <nav className="menu">
+        <nav className={`nav-links ${isOpen ? "open" : ""}`}>
+          <h2 className="logo">FuelTrackPro</h2>
           {menuItems.map((item) => (
             <button
               key={item.label}
-              className="menu-item"
+              className="nav-item"
               onClick={() => handleNavigate(item.path)}
             >
               {item.label}
             </button>
           ))}
         </nav>
-        
-        {/* Rodapé com e-mail */}
-        <div className="sidebar-footer">
-          <p style={{ fontSize: "0.85rem", color: "#bdc3c7",paddingTop: "10vw",}}>
-            {userEmail}
-          </p>
-        </div>
-      </aside>
-
-      {isOpen && <div className="overlay" onClick={() => setIsOpen(false)} />}
-    </>
+      </div>
+    </header>
   );
 }

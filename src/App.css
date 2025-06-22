@@ -1,0 +1,39 @@
+/* Tema claro - padrão 
+body.light-theme {
+  background-color: #f0f2f5;
+  color: #222;
+}
+
+
+body.dark-theme {
+  background-color: #10043d;
+  color: #eee;
+}
+
+/* Você pode personalizar aqui os estilos globais, inputs, botões, cards, etc */
+/* input, button {
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark-theme  ,body.dark-theme body {
+
+}
+body.dark-theme input{
+
+
+}
+body.dark-theme  ,body.dark-theme span ,body.dark-theme p,body.dark-theme {
+
+}
+
+body.light-theme div,button,body,h2,p,a,li,span {
+
+}
+/* Definindo fonte global para Segoe UI */
+body, html, #root {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  /* fallback para outras fontes similares caso Segoe UI não esteja disponível */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}

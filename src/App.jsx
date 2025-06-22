@@ -33,6 +33,7 @@ import OdometroPage from "./pages/odometerPage/OdometerPage";
 import TypesMaintenancePage from "./pages/typesMaintenancePage/TypesMaintenancePage";
 import MaintenancePage from "./pages/maintenancePage/MaintenancePage";
 import AlertsMaintenancePage from "./pages/alertsMaintenancePage/AlertsMaintenancePage";
+import UserProfile from "./components/UserProfile";
 
 export default function App() {
   return (
@@ -328,6 +329,17 @@ export default function App() {
           <PrivateRoute>
             <Layout>
               <AlertsMaintenancePage/>
+            </Layout>
+          </PrivateRoute>
+        }
+        />
+
+         <Route
+        path="/userprofile" element=
+        {
+          <PrivateRoute>
+            <Layout>
+              <UserProfile/>
             </Layout>
           </PrivateRoute>
         }
