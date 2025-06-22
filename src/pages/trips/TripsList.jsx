@@ -8,7 +8,6 @@ import {
   where,
   orderBy,
   updateDoc,
-
 } from "firebase/firestore";
 
 import { db } from "../../services/firebase";
@@ -46,8 +45,7 @@ export default function ViagensList() {
       let q = collection(db, "viagens");
       const filtros = [];
 
-      if (filtroMotorista)
-        filtros.push(where("motorista", "==", filtroMotorista));
+      if (filtroMotorista) filtros.push(where("motorista", "==", filtroMotorista));
       if (filtroCaminhao) filtros.push(where("caminhao", "==", filtroCaminhao));
 
       if (filtros.length > 0) q = query(q, ...filtros);
@@ -110,7 +108,6 @@ export default function ViagensList() {
     }
   };
 
-  // Função para remover vínculo de abastecimento com a viagem
   const removerVinculo = async (abastecimentoId) => {
     if (
       !window.confirm("Deseja realmente remover o vínculo desse abastecimento?")
@@ -125,7 +122,6 @@ export default function ViagensList() {
         viagemId: "",
       });
 
-      // Atualiza a lista local removendo o abastecimento desvinculado
       setAbastecimentos((prev) => prev.filter((a) => a.id !== abastecimentoId));
       alert("Vínculo removido com sucesso!");
     } catch (error) {
@@ -184,45 +180,77 @@ export default function ViagensList() {
 
       {loading ? (
         <p>Carregando viagens...</p>
+      ) : viagens.length === 0 ? (
+        <p>Nenhuma viagem encontrada.</p>
       ) : (
-        <table style={styles.table}>
-          <thead>
-            <tr style={styles.tableTitle}>
-              <th>Motorista</th>
-              <th>Caminhão</th>
-              <th>Data Início</th>
-              <th>Data Fim</th>
-              <th>Origem</th>
-              <th>Destino</th>
-              <th>Rota</th> {/* NOVO */}
-            </tr>
-          </thead>
-          <tbody>
-            {viagens.length === 0 ? (
-              <tr>
-                <td colSpan="7" style={{ textAlign: "center" }}>
-                  Nenhuma viagem encontrada.
-                </td>
-              </tr>
-            ) : (
-              viagens.map((v) => (
-                <tr
-                  key={v.id}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => abrirModal(v)}
-                >
-                  <td>{nomeMotorista(v.motorista)}</td>
-                  <td>{infoCaminhao(v.caminhao)}</td>
-                  <td>{formatarData(v.dataInicio)}</td>
-                  <td>{formatarData(v.dataFim)}</td>
-                  <td>{v.origem || "-"}</td>
-                  <td>{v.destino || "-"}</td>
-                  <td>{v.sigla || `${v.origem} → ${v.destino}`}</td>{" "}
+        <>
+          {/* Desktop: tabela */}
+          <div className="desktopTable" style={{ display: "block" }}>
+            <table style={styles.table}>
+              <thead>
+                <tr style={styles.tableTitle}>
+                  <th>Motorista</th>
+                  <th>Caminhão</th>
+                  <th>Data Início</th>
+                  <th>Data Fim</th>
+                  <th>Origem</th>
+                  <th>Destino</th>
+                  <th>Rota</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {viagens.map((v) => (
+                  <tr
+                    key={v.id}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => abrirModal(v)}
+                  >
+                    <td>{nomeMotorista(v.motorista)}</td>
+                    <td>{infoCaminhao(v.caminhao)}</td>
+                    <td>{formatarData(v.dataInicio)}</td>
+                    <td>{formatarData(v.dataFim)}</td>
+                    <td>{v.origem || "-"}</td>
+                    <td>{v.destino || "-"}</td>
+                    <td>{v.sigla || `${v.origem} → ${v.destino}`}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile: cards */}
+          <div className="mobileCards" style={{ display: "none" }}>
+            {viagens.map((v) => (
+              <div
+                key={v.id}
+                style={styles.card}
+                onClick={() => abrirModal(v)}
+              >
+                <p>
+                  <strong>Motorista:</strong> {nomeMotorista(v.motorista)}
+                </p>
+                <p>
+                  <strong>Caminhão:</strong> {infoCaminhao(v.caminhao)}
+                </p>
+                <p>
+                  <strong>Data Início:</strong> {formatarData(v.dataInicio)}
+                </p>
+                <p>
+                  <strong>Data Fim:</strong> {formatarData(v.dataFim)}
+                </p>
+                <p>
+                  <strong>Origem:</strong> {v.origem || "-"}
+                </p>
+                <p>
+                  <strong>Destino:</strong> {v.destino || "-"}
+                </p>
+                <p>
+                  <strong>Rota:</strong> {v.sigla || `${v.origem} → ${v.destino}`}
+                </p>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {modalOpen && viagemSelecionada && (
@@ -243,8 +271,7 @@ export default function ViagensList() {
                 {formatarData(viagemSelecionada.dataInicio)}
               </p>
               <p>
-                <strong>Data Fim:</strong>{" "}
-                {formatarData(viagemSelecionada.dataFim)}
+                <strong>Data Fim:</strong> {formatarData(viagemSelecionada.dataFim)}
               </p>
 
               <p>
@@ -265,8 +292,7 @@ export default function ViagensList() {
                   `${viagemSelecionada.origem} → ${viagemSelecionada.destino}`}
               </p>
               <p>
-                <strong>Tipo de Carga:</strong>{" "}
-                {viagemSelecionada.tipoCarga || "-"}
+                <strong>Tipo de Carga:</strong> {viagemSelecionada.tipoCarga || "-"}
               </p>
               <p>
                 <strong>Valor do Frete:</strong>{" "}
@@ -275,8 +301,7 @@ export default function ViagensList() {
                   : "-"}
               </p>
               <p>
-                <strong>Nota Fiscal:</strong>{" "}
-                {viagemSelecionada.notaFiscal || "-"}
+                <strong>Nota Fiscal:</strong> {viagemSelecionada.notaFiscal || "-"}
               </p>
               <p>
                 <strong>Status:</strong>{" "}
@@ -331,13 +356,9 @@ export default function ViagensList() {
                 <tbody>
                   {abastecimentos.map((a) => (
                     <tr key={a.id}>
-                      <td style={styles.cell}>
-                        {formatarDataHora(a.dataHora)}
-                      </td>
+                      <td style={styles.cell}>{formatarDataHora(a.dataHora)}</td>
                       <td style={styles.cell}>{a.litros ?? "-"}</td>
-                      <td style={styles.cell}>
-                        {a.precoLitro?.toFixed(2) ?? "-"}
-                      </td>
+                      <td style={styles.cell}>{a.precoLitro?.toFixed(2) ?? "-"}</td>
                       <td style={styles.cell}>
                         {a.litros && a.precoLitro
                           ? `R$ ${(a.litros * a.precoLitro).toFixed(2)}`
@@ -375,6 +396,16 @@ export default function ViagensList() {
           </div>
         </div>
       )}
+      <style>{`
+        @media (max-width: 768px) {
+          .desktopTable {
+            display: none !important;
+          }
+          .mobileCards {
+            display: block !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -397,9 +428,10 @@ const styles = {
     display: "flex",
     gap: 15,
     marginBottom: 24,
+    flexWrap: "wrap",
   },
   select: {
-    flex: 1,
+    flex: "1 1 200px",
     padding: "10px",
     fontSize: 16,
     borderRadius: 8,
@@ -414,7 +446,7 @@ const styles = {
     borderRadius: 8,
     overflow: "hidden",
     boxShadow: "0 0 12px rgba(0,0,0,0.3)",
-    textAlign:"center"
+    textAlign: "center",
   },
   tableTitle: {
     backgroundColor: "#00BCD4",
@@ -426,6 +458,15 @@ const styles = {
     padding: "10px 8px",
     textAlign: "center",
     fontSize: 14,
+  },
+  card: {
+    border: "1px solid #ccc",
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 15,
+    backgroundColor: "#ffffff",
+    boxShadow: "0 2px 8px rgb(0 0 0 / 0.1)",
+    cursor: "pointer",
   },
   modalOverlay: {
     position: "fixed",
@@ -470,4 +511,4 @@ const styles = {
     color: "white",
     transition: "background 0.3s",
   },
-}
+};

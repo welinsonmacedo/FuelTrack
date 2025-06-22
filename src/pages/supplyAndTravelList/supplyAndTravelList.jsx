@@ -26,7 +26,7 @@ export default function AbastecimentosList() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedAbastecimento, setSelectedAbastecimento] = useState(null);
 
-  const navigate = useNavigate(); // ← importante!
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchMotoristas() {
@@ -104,6 +104,11 @@ export default function AbastecimentosList() {
     return c ? `${c.placa} - ${c.modelo}` : id;
   };
 
+  const placaCaminhao = (id) => {
+    const c = caminhoes.find((c) => c.id === id);
+    return c ? c.placa : id;
+  };
+
   const abrirModal = (abastecimento) => {
     setSelectedAbastecimento(abastecimento);
     setModalOpen(true);
@@ -174,13 +179,14 @@ export default function AbastecimentosList() {
           <thead>
             <tr style={styles.tableTitle}>
               <th>Motorista</th>
+              <th>Placa</th>
               <th>Data</th>
             </tr>
           </thead>
           <tbody>
             {abastecimentos.length === 0 ? (
               <tr>
-                <td colSpan="2" style={{ textAlign: "center" }}>
+                <td colSpan="3" style={{ textAlign: "center" }}>
                   Nenhum registro encontrado.
                 </td>
               </tr>
@@ -192,6 +198,7 @@ export default function AbastecimentosList() {
                   onClick={() => abrirModal(a)}
                 >
                   <td>{nomeMotorista(a.motorista)}</td>
+                  <td>{placaCaminhao(a.caminhao)}</td>
                   <td>
                     {a.dataHora && typeof a.dataHora.toDate === "function"
                       ? a.dataHora.toDate().toLocaleDateString("pt-BR")
@@ -217,15 +224,16 @@ export default function AbastecimentosList() {
               {infoCaminhao(selectedAbastecimento.caminhao)}
             </p>
             <p>
+              <strong>Placa:</strong> {placaCaminhao(selectedAbastecimento.caminhao)}
+            </p>
+            <p>
               <strong>Data e Hora:</strong>{" "}
               {selectedAbastecimento.dataHora &&
               typeof selectedAbastecimento.dataHora.toDate === "function"
                 ? selectedAbastecimento.dataHora
                     .toDate()
                     .toLocaleString("pt-BR")
-                : new Date(selectedAbastecimento.dataHora).toLocaleString(
-                    "pt-BR"
-                  )}
+                : new Date(selectedAbastecimento.dataHora).toLocaleString("pt-BR")}
             </p>
             <p>
               <strong>KM:</strong> {selectedAbastecimento.kmAbastecimento}

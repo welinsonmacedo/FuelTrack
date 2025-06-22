@@ -1,35 +1,30 @@
 /* eslint-disable no-unused-vars */
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
 export default function QRCodeScanner({ onResult }) {
-  const scannerRef = useRef(null);
   const [scanResult, setScanResult] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!scannerRef.current) {
-      scannerRef.current = new Html5QrcodeScanner("reader", {
-        fps: 10,
-        qrbox: 250,
-        rememberLastUsedCamera: true,
-      });
+    let scanner = new Html5QrcodeScanner("reader", {
+      fps: 10,
+      qrbox: 250,
+    });
 
-      scannerRef.current.render(
-        (decodedText) => {
-          setScanResult(decodedText);
-          onResult && onResult(decodedText);
-          scannerRef.current.clear().catch(console.error); // parar scanner após leitura
-        },
-        (scanError) => {
-          console.warn("Erro ao escanear:", scanError);
-          // Não define erro aqui porque falhas contínuas são esperadas durante a leitura
-        }
-      );
-    }
+    scanner.render(
+      (decodedText) => {
+        setScanResult(decodedText);
+        onResult && onResult(decodedText);
+        scanner.clear().catch(console.error); // parar scanner
+      },
+      (err) => {
+        console.warn("Erro de escaneamento:", err);
+      }
+    );
 
     return () => {
-      scannerRef.current?.clear().catch(console.error);
+      scanner.clear().catch(() => {});
     };
   }, [onResult]);
 
@@ -37,7 +32,6 @@ export default function QRCodeScanner({ onResult }) {
     <div style={styles.container}>
       <h3 style={styles.title}>Escaneie o QR Code do Cupom</h3>
       <div id="reader" style={styles.readerContainer}></div>
-
       {scanResult && <p style={styles.result}>Resultado: {scanResult}</p>}
       {error && <p style={styles.error}>{error}</p>}
     </div>
@@ -56,6 +50,7 @@ const styles = {
     color: "#1e293b",
   },
   readerContainer: {
+    width: "100%",
     maxWidth: "400px",
     margin: "0 auto",
     border: "2px solid #cbd5e1",

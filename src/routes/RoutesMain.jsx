@@ -37,6 +37,7 @@ import VehicleChecklistWithDefects from "../pages/vehicleChecklist/VehicleCheckl
 import DriverRoute from "./DriveRoute";
 import QRCodeScanner from "../driver/QRCodeScanner";
 import ProtectedFallback from "./ProtectedFallback";
+import OdometerReport from "../pages/odometerPage/OdometerReport";
 
 const privateRoutesMain = (
   <>
@@ -400,6 +401,16 @@ const privateRoutesMain = (
             <QRCodeScanner/>
           </Layout>
        </DriverRoute>
+      }
+    />
+     <Route
+      path="/odometer-report/:veiculoId"
+      element={
+       <PrivateRoute>
+          <Layout>
+            <OdometerReport/>
+          </Layout>
+       </PrivateRoute>
       }
     />
     <Route path="*" element={<ProtectedFallback/>} />
