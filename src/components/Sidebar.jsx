@@ -17,7 +17,8 @@ export default function TopNavbar({ onNavigate }) {
     {
       label: "Relatórios",
       items: [
-        { label: "Geral", path: "/generalreport" },
+        { label: "Geral", path: "/report" },
+        { label: "Dashboard", path: "/dashboardduo" },
         { label: "Abastecimentos", path: "/supplyAndTravelList" },
         { label: "Viagens", path: "/tripsList" },
         { label: "Alertas", path: "/alertsmaintenance" },

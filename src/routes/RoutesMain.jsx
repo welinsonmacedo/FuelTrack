@@ -38,6 +38,7 @@ import DriverRoute from "./DriveRoute";
 import QRCodeScanner from "../driver/QRCodeScanner";
 import ProtectedFallback from "./ProtectedFallback";
 import OdometerReport from "../pages/odometerPage/OdometerReport";
+import DashboardDuo from "../pages/dashboard/Dashboardduo";
 
 const privateRoutesMain = (
   <>
@@ -47,6 +48,16 @@ const privateRoutesMain = (
         <PrivateRoute>
           <Layout>
             <Dashboard />
+          </Layout>
+        </PrivateRoute>
+      }
+    />
+     <Route
+      path="/dashboardduo"
+      element={
+        <PrivateRoute>
+          <Layout>
+            <DashboardDuo/>
           </Layout>
         </PrivateRoute>
       }
