@@ -12,6 +12,7 @@
   "dependencies": {
     "chart.js": "^4.5.0",
     "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
     "firebase": "^11.9.1",
     "firebase-admin": "^13.4.0",
     "html5-qrcode": "^2.3.8",
